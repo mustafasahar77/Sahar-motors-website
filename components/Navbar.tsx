@@ -8,6 +8,7 @@ import { useDialog } from "@/lib/useDialog";
 import { NAV_LINKS, site, fullAddress } from "@/lib/site";
 import {
   Phone,
+  Mail,
   MapPin,
   Menu,
   X,
@@ -98,12 +99,12 @@ export default function Navbar() {
           </ul>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <a
-              href={site.phones[0].href}
+            <Link
+              href="/contact/"
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10"
             >
-              <Phone size={16} /> Call Now
-            </a>
+              <Mail size={16} /> Contact Us
+            </Link>
             <Link
               href="/inventory/"
               className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
