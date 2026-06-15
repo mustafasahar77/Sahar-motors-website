@@ -1,102 +1,155 @@
 # How to Host the Sahar Motors Website
 
-A plain-English guide to putting the website online and connecting your domain.
-No prior experience needed — just follow the steps. Pick **one** hosting option
-below (Option A is recommended).
-
-> **What "hosting" means:** the website is a set of files. A host is a company that
-> serves those files to visitors on the internet. After `npm run build`, all the
-> files live in a folder called **`out`** — that folder *is* the website.
+A plain-English guide to putting the site online — **for free** — and connecting
+your domain. Pick **one** option (Option A is recommended).
 
 ---
 
-## Option A — Cloudflare Pages (recommended: free, fast, auto-updates)
+## First: is it really free, even though it's "multi-page" with a contact form?
 
-Best choice. It connects to your GitHub repo and **rebuilds the site automatically**
-every time you change your inventory and push to GitHub. Free for this kind of site.
+**Yes — completely free.** Here's why, so there's no doubt:
 
-**You need:** the GitHub repo (see GITHUB.md) and a free Cloudflare account.
+- Your site is a **static export** — a folder (`out/`) of plain HTML/CSS/JS files,
+  one HTML file per page. "Multi-page" just means *more files in a folder*. Hosts
+  never charge by page count, and there's no server to keep running.
+- The **inventory search & filters run in the visitor's browser** (JavaScript that
+  ships inside the static files) — no server, no cost.
+- The **contact form** posts straight from the browser to **Web3Forms** (a free
+  external form-to-email service). Your host never processes it, so you need
+  **zero "serverless functions"** and never touch any paid quota.
 
-1. Go to <https://dash.cloudflare.com> and sign up / log in.
-2. In the left menu, click **Workers & Pages** → **Create** → **Pages** tab →
+So nothing about being multi-page or having a working contact form forces a paid
+plan. The only thing a free tier ever limits is *extreme* traffic or build
+volume — far beyond what a dealership site uses (details at the end).
+
+> **Note on Web3Forms:** its free tier allows **250 form submissions/month** with
+> unlimited forms — plenty for inquiries. Only very high volume would need a paid
+> Web3Forms tier, independent of your website host.
+
+---
+
+## Option A — Cloudflare Pages (recommended: free, unlimited bandwidth)
+
+**Why it's the best pick:** the free plan has **unlimited bandwidth and unlimited
+visitor requests** for static sites, free custom domains, and free HTTPS. There's
+no traffic cap that could ever take the site offline. It auto-rebuilds whenever you
+push changes to GitHub.
+
+**Free-plan limits (none of which you'll hit):** unlimited bandwidth/requests ·
+**500 builds/month** (each push = 1 build) · up to 20,000 files per deploy ·
+25 MiB max per file · up to 100 custom domains · free automatic SSL/HTTPS.
+*(Source: developers.cloudflare.com/pages/platform/limits — limits can change.)*
+
+**You need:** the GitHub repo (already done — `hamidabawi/Sahar-motors-website`)
+and a free Cloudflare account.
+
+**Steps:**
+1. Sign up / log in at <https://dash.cloudflare.com>.
+2. Left menu → **Workers & Pages** → **Create application** → **Pages** tab →
    **Connect to Git**.
-3. Authorize Cloudflare to access GitHub, then **select the `sahar-motors-website`
-   repository**.
-4. On the build settings screen, enter exactly:
-   - **Framework preset:** `Next.js (Static HTML Export)` (or leave as "None")
-   - **Build command:** `npm run build`
+3. Click **Install & Authorize** for GitHub, then select the
+   **`Sahar-motors-website`** repository → **Begin setup**.
+4. Enter a **Project name** (becomes `your-name.pages.dev`) and set the
+   **Production branch** to `main`.
+5. **Framework preset:** choose **“Next.js (Static HTML Export)”**. This auto-fills:
+   - **Build command:** `npx next build`
    - **Build output directory:** `out`
-5. Click **Save and Deploy**. Wait ~1–2 minutes. Cloudflare gives you a live URL
-   like `sahar-motors-website.pages.dev` — open it to see your site online. 🎉
+   *(If the preset doesn't appear, type those two values manually.)*
+6. Leave everything else default → **Save and Deploy**. Watch the build log
+   (~1–2 minutes). You'll get a live `your-name.pages.dev` URL. 🎉
+7. **Every future push to `main` rebuilds and republishes automatically.**
 
-**To use your real domain (saharmotors.com):**
-1. In your Pages project → **Custom domains** → **Set up a domain**.
-2. Type `saharmotors.com` (and add `www.saharmotors.com` too).
-3. Cloudflare shows you the DNS records to add. If your domain is already on
-   Cloudflare, it can do this for you in one click. If your domain is registered
-   elsewhere (e.g. Squarespace, GoDaddy), log in there and add the CNAME/records
-   Cloudflare gives you.
-4. HTTPS (the padlock) is set up automatically — no extra steps.
-
-**Updating the site later:** just push your changes to GitHub (see GITHUB.md).
-Cloudflare rebuilds and publishes automatically within a couple of minutes.
+**Custom domain (saharmotors.com):**
+1. In the project → **Custom domains** → **Set up a custom domain** → enter
+   `saharmotors.com` (repeat for `www.saharmotors.com`).
+2. Follow the DNS prompts. If the domain's DNS is on Cloudflare, it's one click;
+   if it's registered elsewhere (e.g. Squarespace/GoDaddy), add the records
+   Cloudflare shows you in that registrar's DNS settings.
+3. HTTPS is provisioned automatically — nothing else to do.
 
 ---
 
-## Option B — Netlify (also free; drag-and-drop possible)
+## Option B — Netlify (also free, but now metered — read the caveat)
 
-Two ways:
+Netlify also hosts this site free with custom domain + HTTPS. **Important change:**
+as of 2026, new Netlify free accounts use a **credit-based** model:
 
-**B1 — Connect GitHub (auto-updates, like Cloudflare):**
-1. Sign up at <https://app.netlify.com>.
-2. **Add new site → Import an existing project → GitHub →** pick the repo.
-3. Build command: `npm run build` · Publish directory: `out` → **Deploy**.
-4. Add your domain under **Domain settings**.
+- **300 credits/month — a hard cap.** Bandwidth costs ~20 credits/GB (≈ **15 GB/month**),
+  each production deploy costs ~15 credits, and **form submissions are free**.
+- ⚠️ **When credits run out, the site is *paused* until the next month** (visitors
+  see an unavailable page). Frequent pushes (each deploy = ~15 credits) or a
+  traffic spike with large photos could exhaust it.
+  *(Source: docs.netlify.com — credit model; limits can change.)*
 
-**B2 — Manual drag-and-drop (no GitHub needed):**
-1. On your computer, run `npm run build` to create the `out` folder.
-2. Go to <https://app.netlify.com/drop> and **drag the `out` folder** onto the page.
-3. It's instantly live. To update later, build again and drag the new `out` folder.
+For a small dealership site this is usually fine, but it's why **Cloudflare Pages
+(unlimited bandwidth, no pause risk) is the safer free choice.**
+
+**Connect-repo steps (auto-updates):**
+1. Sign up at <https://app.netlify.com> → **Add new project** → **Import an existing project** → **GitHub** → authorize → pick `Sahar-motors-website`.
+2. Set **Build command:** `npm run build` and **Publish directory:** `out`
+   *(important: change the auto-detected `.next` to `out` for a static export).*
+3. **Deploy**, then add your domain under **Domain settings** (free SSL included).
+
+**No-GitHub option (manual drag-and-drop):** run `npm run build` on your computer,
+then drag the generated **`out`** folder onto <https://app.netlify.com/drop>. To
+update later, build again and drag the new `out` folder.
 
 ---
 
-## Option C — A traditional web host / cPanel / existing hosting
-
-If you already pay for web hosting (cPanel, Bluehost, GoDaddy hosting, etc.):
+## Option C — A traditional web host / cPanel (if you already pay for one)
 
 1. On your computer, run `npm run build` to create the **`out`** folder.
-2. Log in to your host's **File Manager** (or use an FTP app like FileZilla).
-3. Open the **`public_html`** folder (this is your website's root).
-4. **Upload everything *inside* the `out` folder** into `public_html`
+2. Log in to your host's **File Manager** (or FTP, e.g. FileZilla).
+3. Open **`public_html`** and **upload everything *inside* the `out` folder**
    (the files, not the `out` folder itself).
-5. Visit your domain — the site is live.
+4. Visit your domain — the site is live. To update: build again and re-upload.
 
-To update later: build again and re-upload the new files (overwrite the old ones).
-
-> This site is built so deep links (like a specific car page) work on plain hosts
-> with no special server configuration.
+The site is built so deep links (e.g. a specific car page) work on plain static
+hosts with no special configuration.
 
 ---
 
-## Connecting your domain (general notes)
+## Quick comparison
 
-- Your **domain registrar** is where you bought `saharmotors.com` (it may currently
-  be Squarespace). That's where you change DNS records.
-- When you "connect a domain," you're pointing it at your new host using the records
-  the host gives you (usually a `CNAME` or `A` record).
-- DNS changes can take a few minutes to a few hours to take effect worldwide.
-- **Moving off Squarespace:** keep the Squarespace site up until the new site is live
-  and the domain points to it. Then cancel Squarespace once you've confirmed the new
-  site works on your domain.
+| | Cloudflare Pages (A) | Netlify (B) | cPanel/host (C) |
+|---|---|---|---|
+| Cost | **Free** | Free (credit-capped) | Whatever you already pay |
+| Bandwidth | **Unlimited** | ~15 GB/mo, then **paused** | Per your plan |
+| Auto-deploy on git push | ✅ | ✅ | ❌ (manual upload) |
+| Custom domain + HTTPS | ✅ free | ✅ free | Usually included |
+| Risk of going offline on a traffic spike | **None** | Possible (credit cap) | Per your plan |
+| Best for | **This site (recommended)** | Fine alternative | Already-owned hosting |
 
 ---
 
-## After it's live — quick checklist
+## Moving off Squarespace safely
 
-- [ ] Open the site on your phone and a computer; click through the pages.
-- [ ] Submit a test message on the Contact page to confirm emails arrive
-      (requires the Web3Forms key — see HANDOFF.md §2).
-- [ ] Add a couple of real cars via `/admin` and confirm they appear.
-- [ ] Confirm the padlock (HTTPS) shows in the browser.
+Keep the current Squarespace site up until the new site is live and the domain
+points to it. Then: confirm the new site works on `saharmotors.com`, and only then
+cancel Squarespace.
 
-**Need to change cars, hours, or photos?** See README.md and HANDOFF.md — it's quick.
+---
+
+## After it's live — checklist
+
+- [ ] Open the site on phone + computer; click through every page.
+- [ ] Submit a test message on the Contact page → confirm it arrives at
+      saharbrothersenterprise@gmail.com (needs the Web3Forms key — HANDOFF.md §2).
+- [ ] Add a couple of real cars via `/admin` and confirm they appear
+      (see **MANAGING-INVENTORY.md** for the full how-to).
+- [ ] Confirm the padlock (HTTPS) shows.
+
+---
+
+## When would you *ever* need to pay?
+
+None of these are caused by being multi-page or having a contact form — they're
+pure scale limits, and a dealership site won't reach them:
+
+- **Cloudflare Pages:** more than 500 builds/month, a single file over 25 MiB, or
+  over 20,000 files. (Bandwidth/traffic is unlimited and free.)
+- **Netlify:** traffic beyond ~15 GB/month (the 300-credit cap).
+- **Web3Forms:** more than 250 form submissions/month.
+
+Because the site uses a static export, you **never** need paid serverless
+functions. **Bottom line: host on Cloudflare Pages and it's free, full stop.**

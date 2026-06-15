@@ -68,6 +68,8 @@ owner's guide and pre-launch checklist.
 
 ## Managing inventory (the easy way)
 
+> 📘 **Full owner's walkthrough:** see **[MANAGING-INVENTORY.md](MANAGING-INVENTORY.md)** — detailed, beginner-friendly steps for adding/editing cars, photos, marking sold, publishing, plus a full field reference and troubleshooting.
+
 1. Run the site (or visit the live site) and go to **`/admin`**.
 2. Add, edit, reorder or remove vehicles. Your work auto-saves in your browser.
 3. For photos, drop image files into `public/inventory/` and reference them

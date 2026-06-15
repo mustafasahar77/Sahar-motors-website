@@ -134,6 +134,8 @@ Once you're ready to hand it to the dealership owner:
 
 ## 6. Day-to-day: adding & updating cars
 
+> **Complete step-by-step guide:** see **[MANAGING-INVENTORY.md](MANAGING-INVENTORY.md)**.
+
 1. Open **`/admin`** on the site (it's hidden from search engines).
 2. **Add Vehicle** → fill in the details. Leave **Price** blank for
    "Call for Price". Tick **Feature on homepage** to highlight a car.
