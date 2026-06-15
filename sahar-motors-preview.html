@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sahar Motors — Website Preview</title>
+<style>
+  :root{
+    --navy:#0b2545; --navy2:#13315c; --navy3:#102f54; --navy950:#071a33;
+    --brand:#c8102e; --brand2:#a60d26;
+    --ink:#0f172a; --muted:#475569; --line:#e2e8f0; --bg:#f8fafc;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+  .banner{background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:13px;text-align:center;padding:8px 16px}
+  .banner strong{font-weight:700}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:40;background:rgba(11,37,69,.97);color:#fff;backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.08)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:15px}
+  .logo .badge{width:40px;height:40px;border-radius:11px;background:#0b2545;display:flex;align-items:center;justify-content:center;border-bottom:3px solid var(--brand)}
+  .logo .red{color:#ff5a6e}
+  .nav .links{display:none;gap:22px;font-size:14px;color:#c3d4e8}
+  .nav .links a:hover{color:#fff}
+  .call{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;padding:9px 16px;border-radius:9px;font-weight:600;font-size:14px}
+  @media(min-width:880px){.nav .links{display:flex}}
+
+  /* Hero */
+  .hero{background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;position:relative;overflow:hidden}
+  .hero .wrap{padding:64px 20px 40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);padding:6px 12px;border-radius:999px;font-size:12px;color:#dbe6f3}
+  .hero h1{font-size:clamp(34px,6vw,60px);line-height:1.05;margin:18px 0 0;font-weight:800;letter-spacing:-.02em}
+  .hero p.sub{max-width:620px;color:#c3d4e8;font-size:18px;margin:18px 0 0}
+  .searchbar{margin-top:28px;background:rgba(255,255,255,.96);border-radius:16px;padding:14px;display:grid;gap:10px;grid-template-columns:1fr;box-shadow:0 20px 40px rgba(0,0,0,.25)}
+  @media(min-width:760px){.searchbar{grid-template-columns:1.6fr 1fr 1fr auto}}
+  .searchbar input,.searchbar select{border:1px solid #cbd5e1;border-radius:9px;padding:12px;font-size:14px;color:#0f172a;background:#fff;width:100%}
+  .searchbar button{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:12px 22px;font-weight:700;cursor:pointer;font-size:14px}
+  .searchbar button:hover{background:var(--brand2)}
+  .trust{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:24px;font-size:14px;color:#c3d4e8}
+  .trust b{color:#fff}
+
+  /* Toolbar */
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 6px}
+  .toolbar .count{font-size:14px;color:var(--muted)}
+  .toolbar .count b{color:var(--navy)}
+  .toolbar select{border:1px solid #cbd5e1;border-radius:9px;padding:9px 12px;font-size:14px;background:#fff}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+  .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #cbd5e1;background:#f1f5f9;border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer}
+  .chip:hover{background:#e2e8f0}
+
+  /* Grid */
+  .grid{display:grid;gap:20px;grid-template-columns:1fr;margin:18px 0 60px}
+  @media(min-width:600px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:980px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:box-shadow .2s, transform .2s;cursor:pointer;display:flex;flex-direction:column}
+  .card:hover{box-shadow:0 14px 30px rgba(0,0,0,.10);transform:translateY(-2px)}
+  .card .imgwrap{position:relative;aspect-ratio:16/10;background:#e6edf6}
+  .card .imgwrap svg{width:100%;height:100%;display:block}
+  .badge{position:absolute;top:12px;left:12px;background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px}
+  .badge.sold{background:var(--navy);left:auto;right:12px}
+  .badge.pending{background:#d97706}
+  .card .body{padding:16px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .card h3{margin:0;font-size:16px;color:var(--navy);font-weight:700}
+  .card .meta{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#64748b}
+  .card .price{font-size:20px;font-weight:800;color:var(--brand2);margin-top:6px}
+  .specs{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;font-size:13px;color:#475569}
+  .view{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;font-size:14px;font-weight:700;color:var(--navy)}
+  .view .arr{color:var(--brand)}
+  .empty{grid-column:1/-1;text-align:center;border:1px dashed #cbd5e1;border-radius:14px;background:#f8fafc;padding:56px 20px;color:#475569}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;z-index:60;display:none;align-items:flex-start;justify-content:center;background:rgba(2,8,23,.55);padding:24px;overflow:auto}
+  .modal.open{display:flex}
+  .sheet{background:#fff;border-radius:16px;max-width:820px;width:100%;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.4)}
+  .sheet .hd{position:relative}
+  .sheet .hd svg{width:100%;aspect-ratio:16/9;display:block;background:#e6edf6}
+  .sheet .close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);color:#fff;border:0;width:38px;height:38px;border-radius:999px;font-size:20px;cursor:pointer}
+  .sheet .content{padding:22px}
+  .sheet h2{margin:0;color:var(--navy);font-size:24px}
+  .sheet .price{color:var(--brand2);font-size:26px;font-weight:800;margin:8px 0 0}
+  .sheet .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin:16px 0;font-size:14px}
+  .sheet .grid2 .k{color:#64748b}
+  .feat{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .feat span{background:#f1f5f9;border-radius:8px;padding:5px 10px;font-size:13px}
+  .note{margin-top:18px;background:#eef4fb;border:1px solid #c3d4e8;color:#13315c;border-radius:10px;padding:12px 14px;font-size:13px}
+
+  footer{background:var(--navy950);color:#9bb5d6;font-size:14px}
+  footer .wrap{padding:30px 20px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <strong>Website preview</strong> — a quick taste of your new Sahar Motors site. The full version adds Services, Sell-Your-Car, About &amp; Contact pages, individual car pages, and an easy admin tool to manage inventory.
+</div>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">
+      <span class="badge" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+      </span>
+      Sahar <span class="red">Motors</span>
+    </div>
+    <nav class="links">
+      <a href="#inventory">Inventory</a><a href="#">Services</a><a href="#">Sell Your Car</a><a href="#">About</a><a href="#">Contact</a>
+    </nav>
+    <a class="call" href="tel:+16046522870">Call (604) 652-2870</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">★ Family-owned in Langley, BC</span>
+    <h1>Making Car Ownership<br/>Easy and Affordable</h1>
+    <p class="sub">Quality pre-owned vehicles, honest pricing, and trusted in-house service — all under one roof at Sahar Motors.</p>
+    <div class="searchbar">
+      <input id="q" type="search" placeholder="Search make or model…" aria-label="Search" />
+      <select id="makeSel" aria-label="Make"><option value="">All Makes</option></select>
+      <select id="bodySel" aria-label="Body type"><option value="">All Types</option></select>
+      <button id="searchBtn">Search</button>
+    </div>
+    <div class="trust">
+      <span><b id="stockCount">0</b> vehicles in stock</span>
+      <span>✔ Every vehicle inspected</span>
+      <span>✔ In-house service &amp; repairs</span>
+    </div>
+  </div>
+</section>
+
+<main class="wrap" id="inventory">
+  <div class="toolbar">
+    <div class="count"><b id="resultCount">0</b> <span id="resultWord">vehicles</span></div>
+    <select id="sortSel" aria-label="Sort">
+      <option value="newest">Newest Arrivals</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+      <option value="year-desc">Year: Newest</option>
+      <option value="mileage-asc">Mileage: Lowest</option>
+    </select>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>© Sahar Motors · 5921 200A Street, Langley, BC V3A 6R2 · (604) 652-2870</div>
+    <div>This is a design preview.</div>
+  </div>
+</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+// ---- Sample inventory (a subset of the real data) ----------------------------
+const CARS = [
+  {id:1, make:"Honda", model:"Civic", trim:"LX", year:2020, price:22995, mileage:68000, body:"Sedan", trans:"CVT", drive:"FWD", fuel:"Gasoline", color:"Modern Steel", status:"available", featured:true,
+   desc:"Clean, one-owner Civic LX with great fuel economy. Local BC car, no accidents.", features:["Backup Camera","Apple CarPlay","Heated Seats","Lane Keep Assist","Adaptive Cruise"]},
+  {id:2, make:"Toyota", model:"RAV4", trim:"LE AWD", year:2019, price:27995, mileage:84500, body:"SUV", trans:"Automatic", drive:"AWD", fuel:"Gasoline", color:"Magnetic Grey", status:"available", featured:true,
+   desc:"All-wheel-drive RAV4 LE — the perfect BC all-weather SUV. Reliable and spacious.", features:["All-Wheel Drive","Toyota Safety Sense","Backup Camera","Heated Seats","CarPlay"]},
+  {id:3, make:"Ford", model:"F-150", trim:"XLT SuperCrew", year:2018, price:33995, mileage:112000, body:"Truck", trans:"Automatic", drive:"4WD", fuel:"Gasoline", color:"Oxford White", status:"available", featured:true,
+   desc:"Capable F-150 XLT with the 3.5L EcoBoost V6 and 4x4. Tow package and bedliner.", features:["4x4","Tow Package","Backup Camera","Bedliner","CarPlay","Trailer Brake"]},
+  {id:4, make:"Mazda", model:"CX-5", trim:"GS AWD", year:2019, price:26495, mileage:73200, body:"SUV", trans:"Automatic", drive:"AWD", fuel:"Gasoline", color:"Soul Red", status:"available", featured:true,
+   desc:"Stunning Soul Red CX-5 GS with i-ACTIV AWD. Premium feel and fun to drive.", features:["All-Wheel Drive","Heated Seats","Blind Spot Monitor","Power Liftgate","CarPlay"]},
+  {id:5, make:"Tesla", model:"Model 3", trim:"Standard Range Plus", year:2022, price:38995, mileage:41000, body:"Sedan", trans:"Automatic", drive:"RWD", fuel:"Electric", color:"Pearl White", status:"available", featured:true,
+   desc:"Efficient, quick Model 3 with Autopilot and excellent real-world range.", features:["Autopilot","Glass Roof","360 Cameras","Premium Audio","Navigation"]},
+  {id:6, make:"Hyundai", model:"Elantra", trim:"Preferred", year:2021, price:21495, mileage:52300, body:"Sedan", trans:"Automatic", drive:"FWD", fuel:"Gasoline", color:"Phantom Black", status:"available", featured:false,
+   desc:"Sharp Elantra Preferred with low km and balance of factory warranty.", features:["Backup Camera","CarPlay","Heated Steering","Blind Spot Monitor"]},
+  {id:7, make:"Dodge", model:"Grand Caravan", trim:"SXT", year:2015, price:13995, mileage:138000, body:"Minivan", trans:"Automatic", drive:"FWD", fuel:"Gasoline", color:"Billet Silver", status:"available", featured:false,
+   desc:"Practical 7-passenger Grand Caravan with Stow 'n Go seating. Family-ready value.", features:["7 Passenger","Stow 'n Go","Power Doors","Backup Camera","Tri-Zone Climate"]},
+  {id:8, make:"Ram", model:"1500 Classic", trim:"SLT Crew Cab", year:2019, price:31995, mileage:105000, body:"Truck", trans:"Automatic", drive:"4WD", fuel:"Gasoline", color:"Bright White", status:"pending", featured:false,
+   desc:"Powerful 1500 Classic with the 5.7L HEMI V8 and 4x4. Sale pending.", features:["4x4","HEMI V8","Tow Package","Heated Seats","Remote Start"]},
+  {id:9, make:"BMW", model:"320i", trim:"xDrive", year:2017, price:19995, mileage:110000, body:"Sedan", trans:"Automatic", drive:"AWD", fuel:"Gasoline", color:"Alpine White", status:"sold", featured:false,
+   desc:"Sporty 320i xDrive with leather and sunroof. This one has sold.", features:["Leather","Sunroof","Navigation","Heated Seats","Push-Button Start"]}
+];
+
+const GRADS = [["#0b2545","#13315c"],["#1f2a37","#374151"],["#111827","#0b2545"],["#0b2545","#1d4ed8"]];
+function carSvg(i){
+  const [a,b]=GRADS[i%GRADS.length];
+  return `<svg viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+    <defs><linearGradient id="g${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>
+    <rect width="1600" height="1000" fill="url(#g${i})"/>
+    <g transform="translate(536,170) scale(22)" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+    </g>
+    <text x="800" y="770" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="92" font-weight="800" letter-spacing="6"><tspan fill="#fff">SAHAR </tspan><tspan fill="#c8102e">MOTORS</tspan></text>
+    <text x="800" y="840" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="600" letter-spacing="10" fill="#fff" fill-opacity="0.55">PHOTO COMING SOON</text>
+  </svg>`;
+}
+
+const fmtPrice = p => p==null ? "Call for Price" : "$"+p.toLocaleString("en-CA");
+const fmtKm = m => m.toLocaleString("en-CA")+" km";
+const title = c => `${c.year} ${c.make} ${c.model}${c.trim? " "+c.trim:""}`;
+
+const state = { q:"", make:"", body:"", sort:"newest", includeSold:false };
+
+// Populate filter dropdowns
+const makes=[...new Set(CARS.map(c=>c.make))].sort();
+const bodies=[...new Set(CARS.map(c=>c.body))].sort();
+const makeSel=document.getElementById("makeSel"), bodySel=document.getElementById("bodySel");
+makes.forEach(m=>makeSel.insertAdjacentHTML("beforeend",`<option value="${m}">${m}</option>`));
+bodies.forEach(b=>bodySel.insertAdjacentHTML("beforeend",`<option value="${b}">${b}</option>`));
+document.getElementById("stockCount").textContent = CARS.filter(c=>c.status!=="sold").length;
+
+function applyFilters(){
+  let list = CARS.filter(c=> state.includeSold || c.status!=="sold");
+  if(state.make) list=list.filter(c=>c.make===state.make);
+  if(state.body) list=list.filter(c=>c.body===state.body);
+  if(state.q){ const q=state.q.toLowerCase(); list=list.filter(c=> (title(c)+" "+c.fuel+" "+c.drive+" "+c.features.join(" ")).toLowerCase().includes(q)); }
+  const s=state.sort;
+  list.sort((a,b)=>{
+    if(s==="price-asc") return (a.price??1e12)-(b.price??1e12);
+    if(s==="price-desc") return (b.price??-1)-(a.price??-1);
+    if(s==="year-desc") return b.year-a.year;
+    if(s==="mileage-asc") return a.mileage-b.mileage;
+    return b.year-a.year; // newest-ish
+  });
+  return list;
+}
+
+function render(){
+  const list=applyFilters();
+  document.getElementById("resultCount").textContent=list.length;
+  document.getElementById("resultWord").textContent=list.length===1?"vehicle":"vehicles";
+  // chips
+  const chips=[];
+  if(state.q) chips.push(["q","“"+state.q+"”"]);
+  if(state.make) chips.push(["make",state.make]);
+  if(state.body) chips.push(["body",state.body]);
+  const chipsEl=document.getElementById("chips");
+  chipsEl.innerHTML = chips.map(([k,l])=>`<span class="chip" data-k="${k}">${l} ✕</span>`).join("");
+  chipsEl.querySelectorAll(".chip").forEach(el=>el.onclick=()=>{ state[el.dataset.k]=""; if(el.dataset.k==="q")document.getElementById("q").value=""; if(el.dataset.k==="make")makeSel.value=""; if(el.dataset.k==="body")bodySel.value=""; render(); });
+
+  const grid=document.getElementById("grid");
+  if(list.length===0){ grid.innerHTML=`<div class="empty"><strong>No vehicles match your search.</strong><br/>Try widening your filters.</div>`; return; }
+  grid.innerHTML = list.map((c,idx)=>{
+    let badge="";
+    if(c.status==="sold") badge=`<span class="badge sold">Sold</span>`;
+    else if(c.status==="pending") badge=`<span class="badge pending">Sale Pending</span>`;
+    else if(c.featured) badge=`<span class="badge">Featured</span>`;
+    return `<article class="card" data-id="${c.id}">
+      <div class="imgwrap">${carSvg(c.id)}${badge}</div>
+      <div class="body">
+        <h3>${title(c)}</h3>
+        <div class="meta">${c.body} · Used</div>
+        <div class="price">${fmtPrice(c.price)}</div>
+        <div class="specs">
+          <div>📊 ${fmtKm(c.mileage)}</div><div>⚙ ${c.trans}</div>
+          <div>🚗 ${c.drive}</div><div>⛽ ${c.fuel}</div>
+        </div>
+        <div class="view"><span>View Details</span><span class="arr">→</span></div>
+      </div>
+    </article>`;
+  }).join("");
+  grid.querySelectorAll(".card").forEach(el=>el.onclick=()=>openModal(+el.dataset.id));
+}
+
+function openModal(id){
+  const c=CARS.find(x=>x.id===id); if(!c) return;
+  document.getElementById("sheet").innerHTML=`
+    <div class="hd">${carSvg(c.id)}<button class="close" aria-label="Close">×</button></div>
+    <div class="content">
+      <div class="meta" style="color:#64748b;text-transform:uppercase;font-size:12px;letter-spacing:.05em">Used · ${c.body}</div>
+      <h2>${title(c)}</h2>
+      <div class="price">${fmtPrice(c.price)}</div>
+      <div class="grid2">
+        <div><span class="k">Year:</span> ${c.year}</div><div><span class="k">Mileage:</span> ${fmtKm(c.mileage)}</div>
+        <div><span class="k">Transmission:</span> ${c.trans}</div><div><span class="k">Drivetrain:</span> ${c.drive}</div>
+        <div><span class="k">Fuel:</span> ${c.fuel}</div><div><span class="k">Exterior:</span> ${c.color}</div>
+      </div>
+      <p style="color:#334155">${c.desc}</p>
+      <strong style="color:#0b2545">Features</strong>
+      <div class="feat">${c.features.map(f=>`<span>✔ ${f}</span>`).join("")}</div>
+      <div class="note"><strong>Sample preview.</strong> On the real website, each car has its own shareable page with a full photo gallery and an inquiry form that emails Sahar Motors directly.</div>
+    </div>`;
+  const modal=document.getElementById("modal");
+  modal.classList.add("open");
+  document.getElementById("sheet").querySelector(".close").onclick=closeModal;
+}
+function closeModal(){ document.getElementById("modal").classList.remove("open"); }
+document.getElementById("modal").addEventListener("click",e=>{ if(e.target.id==="modal") closeModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+// Wire controls
+document.getElementById("q").addEventListener("input",e=>{ state.q=e.target.value; render(); });
+document.getElementById("searchBtn").addEventListener("click",()=>{ state.q=document.getElementById("q").value; render(); });
+makeSel.addEventListener("change",e=>{ state.make=e.target.value; render(); });
+bodySel.addEventListener("change",e=>{ state.body=e.target.value; render(); });
+document.getElementById("sortSel").addEventListener("change",e=>{ state.sort=e.target.value; render(); });
+
+render();
+</script>
+</body>
+</html>

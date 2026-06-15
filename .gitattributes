@@ -1,0 +1,11 @@
+# Normalize line endings — keep LF in the repo regardless of OS checkout.
+* text=auto eol=lf
+
+# Treat these as binary (no EOL normalization / diffing).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

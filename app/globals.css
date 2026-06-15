@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand navy — primary surface for header, footer, hero */
+  --color-navy-50: #f3f7fb;
+  --color-navy-100: #e6edf6;
+  --color-navy-200: #c3d4e8;
+  --color-navy-300: #9bb5d6;
+  --color-navy-400: #5a7fb0;
+  --color-navy-500: #2f5689;
+  --color-navy-600: #1b4079;
+  --color-navy-700: #13315c;
+  --color-navy-800: #102f54;
+  --color-navy-900: #0b2545;
+  --color-navy-950: #071a33;
+
+  /* Brand accent — confident automotive crimson for CTAs + highlights */
+  --color-brand-50: #fdecef;
+  --color-brand-100: #fbd5da;
+  --color-brand-200: #f5aab5;
+  --color-brand-300: #ee7c8d;
+  --color-brand-400: #e3344f;
+  --color-brand-500: #c8102e;
+  --color-brand-600: #a60d26;
+  --color-brand-700: #850a1e;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-sora), var(--font-inter), ui-sans-serif, sans-serif;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Keep anchored content clear of the sticky header */
+  scroll-padding-top: 5.5rem;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Accessible focus ring for keyboard users across interactive elements */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Respect reduced-motion preferences for all animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hide number-input spinners for the price/year/km filter fields */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
