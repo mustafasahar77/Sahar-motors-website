@@ -12,45 +12,31 @@ This covers three things:
 
 ---
 
-## Part A — Hamid: first push to your GitHub
+## Part A — Hamid: push to your GitHub  ✅ ALREADY DONE
 
-The project on your computer (`C:\Claud Code\sahar-motors-website`) is already a git
-repository with a first commit ready to go. You just need to send it to GitHub.
+The project is **already on your GitHub**, private, at
+**<https://github.com/hamidabawi/Sahar-motors-website>** — the full source, all the
+guidance docs, and the preview file are pushed, and `origin` is already set on this
+computer. **You do not need to do a first push.**
 
-### A1. Create an empty repository
-1. Go to <https://github.com/new> (sign in as **hamidabawi**).
-2. **Repository name:** `sahar-motors-website`
-3. **Visibility:** Private
-4. **Do NOT** check "Add a README", ".gitignore", or "license" — the project already
-   has them. (Adding them here causes a conflict.)
-5. Click **Create repository**.
+For future changes from this computer, just commit and push (see **Part C**).
 
-### A2. Create a fine-grained access token (your standing preference — no OAuth)
-1. GitHub → click your avatar → **Settings** → **Developer settings** (bottom left).
-2. **Personal access tokens → Fine-grained tokens → Generate new token**.
-3. **Resource owner:** `hamidabawi`
-4. **Repository access:** *Only select repositories* → choose `sahar-motors-website`.
-5. **Permissions → Repository permissions → Contents → Read and write**.
-6. **Generate token** and copy it (you won't see it again — paste it somewhere safe
-   temporarily).
+<details>
+<summary>Reference: if you ever need to push from a <em>new</em> computer</summary>
 
-### A3. Push
-Open a terminal in the project folder and run:
-```bash
-cd "C:\Claud Code\sahar-motors-website"
-git remote add origin https://github.com/hamidabawi/sahar-motors-website.git
-git branch -M main
-git push -u origin main
-```
-When prompted:
-- **Username:** `hamidabawi`
-- **Password:** paste the **token** from step A2 (not your GitHub password).
-
-> If a browser window pops up asking you to "Sign in with GitHub" (Git Credential
-> Manager's OAuth), just **close it** — the terminal will then ask for the
-> username/token directly, keeping to your token-only approach.
-
-Refresh the GitHub repo page — your code is now there. ✅
+1. Create a fine-grained token: GitHub → **Settings → Developer settings →
+   Fine-grained tokens → Generate new token** → Repository access: select
+   `Sahar-motors-website` → **Permissions → Repository permissions → Contents:
+   Read and write** → Generate and copy it.
+2. In the project folder:
+   ```bash
+   git remote add origin https://github.com/hamidabawi/Sahar-motors-website.git
+   git push -u origin main
+   ```
+   When prompted — **Username:** `hamidabawi`, **Password:** paste the token. (If a
+   "Sign in with GitHub" browser popup appears, close it so the terminal asks for the
+   token directly — keeping to your token-only approach.)
+</details>
 
 ---
 
@@ -85,7 +71,7 @@ You have two easy ways to edit. **Most people should use GitHub Desktop (C1).**
 
 ### C1. The easy way — GitHub Desktop (recommended, no command line)
 1. Install **GitHub Desktop** from <https://desktop.github.com> and sign in.
-2. **File → Clone repository →** pick `sahar-motors-website` → choose a folder on
+2. **File → Clone repository →** pick `Sahar-motors-website` → choose a folder on
    your computer → **Clone**. (This downloads the project.)
 3. Make your changes:
    - **To change cars:** open the site's `/admin` page, edit your inventory, click
@@ -108,8 +94,8 @@ For a quick text change:
 
 ### C3. For developers — command line
 ```bash
-git clone https://github.com/<owner>/sahar-motors-website.git
-cd sahar-motors-website
+git clone https://github.com/<owner>/Sahar-motors-website.git
+cd Sahar-motors-website
 npm install
 npm run dev          # preview locally at http://localhost:3000
 # ...make changes...
@@ -127,7 +113,7 @@ git push
 | Add / edit / remove cars | Use `/admin`, download `inventory.json`, replace `data/inventory.json`, push |
 | Add car photos | Put files in `public/inventory/`, reference them in `/admin`, push |
 | Change hours/phone/social/email | Edit `lib/site.ts`, push |
-| Connect contact-form emails | Add Web3Forms key in `lib/site.ts` (HANDOFF.md §2) |
+| Change where form emails go | Web3Forms keys in `lib/site.ts` — already configured (HANDOFF.md §2) |
 | Put the site online | See HOSTING.md |
 
 Every push automatically updates the live website.
