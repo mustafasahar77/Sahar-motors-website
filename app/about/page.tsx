@@ -42,6 +42,13 @@ const values = [
   },
 ];
 
+const team = [
+  { name: "Mustafar Sahar", title: "Founder & CEO", image: "/team/mustafar-sahar.jpg" },
+  { name: "Mujataba Sahar", title: "Operations Director", image: "/team/mujataba-sahar.jpg" },
+  { name: "Samiullah Mohib", title: "Sales Manager", image: "/team/samiullah-mohib.jpg" },
+  { name: "Sijad Liwal", title: "Sales Manager", image: "/team/sijad-liwal.jpg" },
+];
+
 const mapEmbed = `https://www.google.com/maps?q=${encodeURIComponent(
   site.mapsQuery,
 )}&output=embed`;
@@ -119,8 +126,43 @@ export default function AboutPage() {
         </Container>
       </section>
 
+      {/* Team */}
+      <section className="border-t border-slate-200 bg-white py-16 sm:py-20">
+        <Container>
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-extrabold text-navy-900">
+              Meet the Team
+            </h2>
+            <p className="mt-2 text-slate-600">
+              The family and people behind Sahar Motors.
+            </p>
+          </div>
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {team.map((m, i) => (
+              <Reveal key={m.name} delay={i * 0.08}>
+                <div className="h-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={m.image}
+                    alt={m.name}
+                    loading="lazy"
+                    className="aspect-[4/5] w-full object-cover"
+                  />
+                  <div className="p-5">
+                    <h3 className="text-lg font-bold text-navy-900">{m.name}</h3>
+                    <p className="mt-0.5 text-sm font-medium text-brand-600">
+                      {m.title}
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </section>
+
       {/* Visit */}
-      <section className="bg-white py-16 sm:py-20">
+      <section className="border-t border-slate-200 bg-slate-50 py-16 sm:py-20">
         <Container>
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
