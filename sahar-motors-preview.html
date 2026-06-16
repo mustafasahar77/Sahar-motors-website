@@ -282,18 +282,18 @@
         </div>
         <div class="row"><div><label>Email <span class="req">*</span></label><input class="field" name="email" type="email" required placeholder="you@example.com" /></div></div>
         <div class="row three-col">
-          <div><label>Year <span class="req">*</span></label><input class="field" name="v_year" required placeholder="2018" /></div>
-          <div><label>Make <span class="req">*</span></label><input class="field" name="v_make" required placeholder="Honda" /></div>
-          <div><label>Model <span class="req">*</span></label><input class="field" name="v_model" required placeholder="Civic" /></div>
+          <div><label>Year <span class="req">*</span></label><input class="field" name="Vehicle Year" required placeholder="2018" /></div>
+          <div><label>Make <span class="req">*</span></label><input class="field" name="Vehicle Make" required placeholder="Honda" /></div>
+          <div><label>Model <span class="req">*</span></label><input class="field" name="Vehicle Model" required placeholder="Civic" /></div>
         </div>
         <div class="row three-col">
-          <div><label>Trim</label><input class="field" name="v_trim" placeholder="EX-L AWD" /></div>
-          <div><label>Mileage (km)</label><input class="field" name="v_km" placeholder="84,000" /></div>
-          <div><label>Condition</label><select class="field" name="v_cond"><option value="">Select…</option><option>Excellent</option><option>Good</option><option>Fair</option><option>Needs work</option></select></div>
+          <div><label>Trim</label><input class="field" name="Vehicle Trim" placeholder="EX-L AWD" /></div>
+          <div><label>Mileage (km)</label><input class="field" name="Mileage (km)" placeholder="84,000" /></div>
+          <div><label>Condition</label><select class="field" name="Condition"><option value="">Select…</option><option>Excellent</option><option>Good</option><option>Fair</option><option>Needs work</option></select></div>
         </div>
         <div class="row two-col">
-          <div><label>VIN</label><input class="field" name="v_vin" maxlength="17" placeholder="1HGBH41JXMN109186" style="text-transform:uppercase" /><div style="font-size:12px;color:var(--muted);margin-top:4px">17-character VIN — optional, but speeds up an accurate offer.</div></div>
-          <div><label>Asking price (CAD)</label><input class="field" name="v_price" placeholder="Optional" /></div>
+          <div><label>VIN</label><input class="field" name="VIN" maxlength="17" placeholder="1HGBH41JXMN109186" style="text-transform:uppercase" /><div style="font-size:12px;color:var(--muted);margin-top:4px">17-character VIN — optional, but speeds up an accurate offer.</div></div>
+          <div><label>Asking price (CAD)</label><input class="field" name="Asking Price" placeholder="Optional" /></div>
         </div>
         <div class="row"><div><label>Anything else?</label><textarea class="field" name="message" placeholder="Condition notes, modifications, reason for selling, etc."></textarea></div></div>
         <button class="submit" type="submit">Get My Offer</button>
@@ -530,28 +530,31 @@
   // contact form -> email
   $("cform").addEventListener("submit",function(e){
     e.preventDefault();
-    var f=e.target;
-    var name=f.name.value.trim(),email=f.email.value.trim(),phone=f.phone.value.trim(),msg=f.message.value.trim();
-    var body="Name: "+name+"\nEmail: "+email+"\nPhone: "+phone+"\n\nMessage:\n"+msg;
-    var href="mailto:saharbrothersenterprise@gmail.com?subject="+encodeURIComponent("Website Inquiry from "+name)+"&body="+encodeURIComponent(body);
-    window.location.href=href;
-    f.style.display="none";
-    var done=$("cdone");
-    done.style.display="block";
-    done.innerHTML="<strong>Thanks, "+(name||"there")+"!</strong> Your email app should open with your message ready to send to saharbrothersenterprise@gmail.com. (On the live website this is sent automatically — no email app needed.)";
+    var f=e.target,btn=f.querySelector(".submit");
+    var fd=new FormData(f);
+    fd.append("access_key","df44d32d-05da-44ee-aacb-7357cc7d86cf");
+    fd.append("subject","New Contact Inquiry — Sahar Motors");
+    fd.append("from_name","Sahar Motors Website");
+    if(btn){btn.disabled=true;btn.textContent="Sending…";}
+    fetch("https://api.web3forms.com/submit",{method:"POST",body:fd}).then(function(r){return r.json();}).then(function(j){
+      if(j.success){f.style.display="none";var d=$("cdone");d.style.display="block";d.innerHTML="<strong>Message sent!</strong> Thanks for reaching out — the Sahar Motors team will get back to you shortly.";}
+      else{if(btn){btn.disabled=false;btn.textContent="Send Message";}alert("Sorry, something went wrong sending your message. Please try again or call us.");}
+    }).catch(function(){if(btn){btn.disabled=false;btn.textContent="Send Message";}alert("Network error — please check your connection and try again.");});
   });
 
   // sell-your-car form -> email
   $("sform").addEventListener("submit",function(e){
     e.preventDefault();
-    var f=e.target;function g(n){return (f.elements[n]&&f.elements[n].value||"").trim();}
-    var name=g("name");
-    var body="SELLER\nName: "+name+"\nPhone: "+g("phone")+"\nEmail: "+g("email")+"\n\nVEHICLE\nYear: "+g("v_year")+"\nMake: "+g("v_make")+"\nModel: "+g("v_model")+"\nTrim: "+g("v_trim")+"\nMileage: "+g("v_km")+" km\nVIN: "+g("v_vin")+"\nAsking price: "+g("v_price")+"\nCondition: "+g("v_cond")+"\n\nNotes:\n"+g("message");
-    var href="mailto:saharbrothersenterprise@gmail.com?subject="+encodeURIComponent("Sell/Trade Inquiry from "+name)+"&body="+encodeURIComponent(body);
-    window.location.href=href;
-    f.style.display="none";
-    var d=$("sdone");d.style.display="block";
-    d.innerHTML="<strong>Thanks, "+(name||"there")+"!</strong> Your email app should open with your vehicle details ready to send to saharbrothersenterprise@gmail.com. (On the live website this is sent automatically — no email app needed.)";
+    var f=e.target,btn=f.querySelector(".submit");
+    var fd=new FormData(f);
+    fd.append("access_key","f9e3b6e3-9e6a-42cf-985b-7e264cd49e35");
+    fd.append("subject","New Sell / Trade Inquiry — Sahar Motors");
+    fd.append("from_name","Sahar Motors Website");
+    if(btn){btn.disabled=true;btn.textContent="Sending…";}
+    fetch("https://api.web3forms.com/submit",{method:"POST",body:fd}).then(function(r){return r.json();}).then(function(j){
+      if(j.success){f.style.display="none";var d=$("sdone");d.style.display="block";d.innerHTML="<strong>Thanks!</strong> Your vehicle details have been sent to Sahar Motors — we'll get back to you with an offer shortly.";}
+      else{if(btn){btn.disabled=false;btn.textContent="Get My Offer";}alert("Sorry, something went wrong. Please try again or call us.");}
+    }).catch(function(){if(btn){btn.disabled=false;btn.textContent="Get My Offer";}alert("Network error — please check your connection and try again.");});
   });
 
   // hamburger

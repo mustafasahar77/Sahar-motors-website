@@ -17,8 +17,8 @@ replaced before going live. Each is clearly marked in the code.
       set the real schedule.
 - [ ] **Social links** — `lib/site.ts` → `social.instagram` / `social.facebook`.
       Currently point to generic profiles.
-- [ ] **Contact forms** — connect a free Web3Forms key (see §2). Until then forms
-      run in clearly-labelled "demo mode" and don't send email.
+- [x] **Contact forms** — Web3Forms keys configured (Contact + Sell each have their
+      own key; submissions email saharbrothersenterprise@gmail.com). See §2.
 - [ ] **Customer reviews** — `components/home/Testimonials.tsx` contains clearly
       labelled *sample* reviews. Replace with real ones (e.g. from Google).
 - [ ] **Production URL** — `lib/site.ts` → `url`. Set to the final domain so SEO
@@ -46,21 +46,24 @@ Everything you change day-to-day lives in **`lib/site.ts`**, **`data/inventory.j
 
 ---
 
-## 2. Connecting the contact forms (Web3Forms — free)
+## 2. Contact forms (Web3Forms — already connected)
 
-All forms (contact, service booking, sell/trade, vehicle inquiry) submit through
-[Web3Forms](https://web3forms.com), which emails submissions to you — no server
-required.
+All forms submit through [Web3Forms](https://web3forms.com), which emails
+submissions straight to the dealership inbox — no server required. **This is
+already set up** with a separate key per form, so submissions go live the moment
+the site is deployed:
 
-1. Go to <https://web3forms.com>, enter the dealership email
-   (`saharbrothersenterprise@gmail.com`), and copy the **Access Key** they email you.
-2. Open `lib/site.ts` and replace:
-   ```ts
-   web3formsAccessKey: "YOUR-WEB3FORMS-ACCESS-KEY",
-   ```
-   with your real key.
-3. Rebuild/redeploy. Submissions now arrive in the inbox. (You can test the form;
-   a "demo mode" banner disappears once the key is set.)
+| Form | Key in `lib/site.ts` | Emails to |
+|------|----------------------|-----------|
+| Contact (`/contact`) | `web3formsAccessKey` | saharbrothersenterprise@gmail.com |
+| Sell / Trade (`/sell-your-car`) | `web3formsSellAccessKey` | saharbrothersenterprise@gmail.com |
+
+- These access keys are **public** by design (meant to live in website code) — safe to commit.
+- Free tier covers **250 submissions/month per key**.
+- **To change a destination/key:** create a new key at <https://web3forms.com> with
+  the desired inbox, paste it into the matching field in `lib/site.ts`, and redeploy.
+- **Test once after deploy:** submit each form and confirm the email arrives (check
+  spam the first time and mark "not spam").
 
 ---
 

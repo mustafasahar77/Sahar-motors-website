@@ -58,9 +58,11 @@ export const site = {
   },
 
   // --- Integrations ------------------------------------------------------
-  // Free contact-form backend. Create a key at https://web3forms.com and paste
-  // it here. Until then, forms run in DEMO mode (no email is sent).
-  web3formsAccessKey: "YOUR-WEB3FORMS-ACCESS-KEY",
+  // Free Web3Forms backends. These are PUBLIC access keys (safe to ship in
+  // client code) created at https://web3forms.com with the dealership inbox.
+  // Each form uses its own key so submissions are routed/labelled separately.
+  web3formsAccessKey: "df44d32d-05da-44ee-aacb-7357cc7d86cf", // Contact form
+  web3formsSellAccessKey: "f9e3b6e3-9e6a-42cf-985b-7e264cd49e35", // Sell / trade form
 } as const;
 
 /** True when forms are wired to a real Web3Forms key. */

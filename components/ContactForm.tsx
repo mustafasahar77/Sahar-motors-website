@@ -19,6 +19,8 @@ type ContactFormProps = {
   defaultMessage?: string;
   /** Require a phone number in addition to email. */
   requirePhone?: boolean;
+  /** Web3Forms access key; defaults to the site-wide contact key. */
+  accessKey?: string;
 };
 
 const inputClass =
@@ -35,6 +37,7 @@ export default function ContactForm({
   messagePlaceholder = "How can we help?",
   defaultMessage = "",
   requirePhone = false,
+  accessKey = site.web3formsAccessKey,
 }: ContactFormProps) {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string>("");
@@ -65,7 +68,7 @@ export default function ContactForm({
 
     try {
       const payload = new FormData(form);
-      payload.append("access_key", site.web3formsAccessKey);
+      payload.append("access_key", accessKey);
       payload.append("subject", subject);
       payload.append("from_name", site.name);
 
