@@ -3,6 +3,9 @@
 This document covers everything needed to launch, maintain, and take ownership of
 the website. For developer/run details see **README.md**.
 
+> 🚀 **New owner? Start with [QUICKSTART.md](QUICKSTART.md)** — the short day-to-day
+> guide for using the site once it's live.
+
 ---
 
 ## 1. Pre-launch checklist
@@ -10,9 +13,9 @@ the website. For developer/run details see **README.md**.
 The site is fully functional, but a few items use **placeholders** that should be
 replaced before going live. Each is clearly marked in the code.
 
-- [ ] **Real vehicle listings & photos.** Add real cars via `/admin` and put real
-      photos in `public/inventory/`. The included cars and "Photo Coming Soon"
-      images are demo data — replace or delete them.
+- [x] **Real vehicle listings & photos.** The 7 current live vehicles (with real
+      photos) are loaded from the existing site. Keep them up to date via `/admin` —
+      see MANAGING-INVENTORY.md.
 - [ ] **Business hours** — `lib/site.ts` → `hours`. Currently placeholder hours;
       set the real schedule.
 - [ ] **Social links** — `lib/site.ts` → `social.instagram` / `social.facebook`.

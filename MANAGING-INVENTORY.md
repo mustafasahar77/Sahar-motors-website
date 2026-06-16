@@ -38,7 +38,8 @@ The **/admin** tool is a friendly form that builds the listing data for you.
 
 ### A. Open the admin tool
 - **On the live site:** go to your website address followed by **`/admin`**
-  (for example `https://your-site.com/admin`).
+  (for example `https://saharmotors.com/admin`) and enter the admin password
+  (currently **`password`** — change it in `lib/site.ts` → `adminPassword`; see HOSTING.md).
 - **Or on your computer** (no internet needed): open the project folder, and if
   you have it running locally it's at `http://localhost:3000/admin`.
 
