@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import AdminApp from "@/components/admin/AdminApp";
+import AdminGate from "@/components/admin/AdminGate";
 
 export const metadata: Metadata = {
   title: "Inventory Manager",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function AdminPage() {
   return (
     <div className="min-h-[60vh] bg-slate-50">
-      <AdminApp />
+      <AdminGate />
     </div>
   );
 }
