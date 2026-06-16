@@ -58,11 +58,10 @@ the site is deployed:
 | Contact (`/contact`) | `web3formsAccessKey` | sales@saharmotors.com |
 | Sell / Trade (`/sell-your-car`) | `web3formsSellAccessKey` | sales@saharmotors.com |
 
-> ⚠️ **Delivery follows the key's registered inbox — not the address printed on the
-> page.** Web3Forms emails each submission to the mailbox the key was *created with*.
-> For submissions to actually arrive at **sales@saharmotors.com**, the two keys must
-> be created at <https://web3forms.com> using that mailbox (you need to receive the
-> verification email there), then pasted into `lib/site.ts`.
+> **Where submissions go:** Web3Forms delivers to the inbox each key is registered
+> to. Both keys are now set to deliver to **sales@saharmotors.com**. To change the
+> destination later, update the key's email in the Web3Forms dashboard (or create a
+> new key and paste it into `lib/site.ts`), then redeploy.
 
 - These access keys are **public** by design (meant to live in website code) — safe to commit.
 - Free tier covers **250 submissions/month per key**.
