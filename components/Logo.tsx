@@ -10,7 +10,7 @@ type LogoProps = {
  * background and leaves just the silver artwork — no separate transparent
  * asset needed. Replace public/logo.jpg to change it.
  */
-export default function Logo({ height = 58, className }: LogoProps) {
+export default function Logo({ height = 88, className }: LogoProps) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
