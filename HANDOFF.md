@@ -18,7 +18,7 @@ replaced before going live. Each is clearly marked in the code.
 - [ ] **Social links** — `lib/site.ts` → `social.instagram` / `social.facebook`.
       Currently point to generic profiles.
 - [x] **Contact forms** — Web3Forms keys configured (Contact + Sell each have their
-      own key; submissions email saharbrothersenterprise@gmail.com). See §2.
+      own key; submissions email sales@saharmotors.com). See §2.
 - [ ] **Customer reviews** — `components/home/Testimonials.tsx` contains clearly
       labelled *sample* reviews. Replace with real ones (e.g. from Google).
 - [ ] **Production URL** — `lib/site.ts` → `url`. Set to the final domain so SEO
@@ -55,8 +55,14 @@ the site is deployed:
 
 | Form | Key in `lib/site.ts` | Emails to |
 |------|----------------------|-----------|
-| Contact (`/contact`) | `web3formsAccessKey` | saharbrothersenterprise@gmail.com |
-| Sell / Trade (`/sell-your-car`) | `web3formsSellAccessKey` | saharbrothersenterprise@gmail.com |
+| Contact (`/contact`) | `web3formsAccessKey` | sales@saharmotors.com |
+| Sell / Trade (`/sell-your-car`) | `web3formsSellAccessKey` | sales@saharmotors.com |
+
+> ⚠️ **Delivery follows the key's registered inbox — not the address printed on the
+> page.** Web3Forms emails each submission to the mailbox the key was *created with*.
+> For submissions to actually arrive at **sales@saharmotors.com**, the two keys must
+> be created at <https://web3forms.com> using that mailbox (you need to receive the
+> verification email there), then pasted into `lib/site.ts`.
 
 - These access keys are **public** by design (meant to live in website code) — safe to commit.
 - Free tier covers **250 submissions/month per key**.

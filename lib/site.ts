@@ -27,7 +27,7 @@ export const site = {
     { label: "Main", value: "(604) 652-2870", href: "tel:+16046522870" },
     { label: "Mobile", value: "(778) 773-4676", href: "tel:+17787734676" },
   ],
-  email: "saharbrothersenterprise@gmail.com",
+  email: "sales@saharmotors.com",
   address: {
     street: "5921 200A Street",
     city: "Langley",

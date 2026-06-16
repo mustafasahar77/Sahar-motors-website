@@ -134,7 +134,7 @@ cancel Squarespace.
 
 - [ ] Open the site on phone + computer; click through every page.
 - [ ] Submit a test message on the Contact page → confirm it arrives at
-      saharbrothersenterprise@gmail.com (needs the Web3Forms key — HANDOFF.md §2).
+      sales@saharmotors.com (needs the Web3Forms key — HANDOFF.md §2).
 - [ ] Add a couple of real cars via `/admin` and confirm they appear
       (see **MANAGING-INVENTORY.md** for the full how-to).
 - [ ] Confirm the padlock (HTTPS) shows.
