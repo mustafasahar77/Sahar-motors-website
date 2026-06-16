@@ -15,7 +15,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         {/* Brand */}
         <div>
-          <Logo height={54} />
+          <Logo height={84} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-navy-200">
             {site.tagline}. Quality pre-owned vehicles and trusted service in{" "}
             {site.address.city}, {site.address.province}.

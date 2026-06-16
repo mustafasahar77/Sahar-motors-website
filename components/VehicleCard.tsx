@@ -24,7 +24,7 @@ export default function VehicleCard({ vehicle, priority }: VehicleCardProps) {
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-lg">
-      <Link href={href} className="relative block aspect-[16/10] overflow-hidden bg-navy-100">
+      <Link href={href} target="_blank" rel="noopener noreferrer" className="relative block aspect-[16/10] overflow-hidden bg-navy-100">
         <VehicleImage
           src={vehicle.images[0]}
           alt={title}
@@ -56,7 +56,12 @@ export default function VehicleCard({ vehicle, priority }: VehicleCardProps) {
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-base font-bold leading-snug text-navy-900">
-            <Link href={href} className="after:absolute after:inset-0">
+            <Link
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="after:absolute after:inset-0"
+            >
               {title}
             </Link>
           </h3>

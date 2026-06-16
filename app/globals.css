@@ -14,15 +14,15 @@
   --color-navy-900: #0b2545;
   --color-navy-950: #071a33;
 
-  /* Brand accent — confident automotive crimson for CTAs + highlights */
-  --color-brand-50: #fdecef;
-  --color-brand-100: #fbd5da;
-  --color-brand-200: #f5aab5;
-  --color-brand-300: #ee7c8d;
-  --color-brand-400: #e3344f;
-  --color-brand-500: #c8102e;
-  --color-brand-600: #a60d26;
-  --color-brand-700: #850a1e;
+  /* Brand accent — deep dark blue for CTAs + highlights */
+  --color-brand-50: #eef2fb;
+  --color-brand-100: #d6e0f5;
+  --color-brand-200: #aec2ec;
+  --color-brand-300: #7e9ce0;
+  --color-brand-400: #4f73d2;
+  --color-brand-500: #1e40af;
+  --color-brand-600: #18348c;
+  --color-brand-700: #132a70;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-sora), var(--font-inter), ui-sans-serif, sans-serif;

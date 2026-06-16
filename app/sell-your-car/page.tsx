@@ -143,7 +143,22 @@ export default function SellYourCarPage() {
                         />
                       </div>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div>
+                        <label
+                          htmlFor="sell-trim"
+                          className="mb-1 block text-sm font-medium text-navy-900"
+                        >
+                          Trim
+                        </label>
+                        <input
+                          id="sell-trim"
+                          name="vehicle_trim"
+                          type="text"
+                          placeholder="EX-L AWD"
+                          className={fieldClass}
+                        />
+                      </div>
                       <div>
                         <label
                           htmlFor="sell-km"
@@ -181,6 +196,45 @@ export default function SellYourCarPage() {
                           <option>Fair</option>
                           <option>Needs work</option>
                         </select>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="sell-vin"
+                          className="mb-1 block text-sm font-medium text-navy-900"
+                        >
+                          VIN
+                        </label>
+                        <input
+                          id="sell-vin"
+                          name="vehicle_vin"
+                          type="text"
+                          maxLength={17}
+                          autoCapitalize="characters"
+                          placeholder="1HGBH41JXMN109186"
+                          className={`${fieldClass} uppercase placeholder:normal-case`}
+                        />
+                        <p className="mt-1 text-xs text-slate-500">
+                          17-character Vehicle Identification Number — optional,
+                          but it speeds up an accurate offer.
+                        </p>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="sell-price"
+                          className="mb-1 block text-sm font-medium text-navy-900"
+                        >
+                          Asking price (CAD)
+                        </label>
+                        <input
+                          id="sell-price"
+                          name="vehicle_asking_price"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="Optional"
+                          className={fieldClass}
+                        />
                       </div>
                     </div>
                   </>
