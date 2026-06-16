@@ -37,9 +37,9 @@ Everything you change day-to-day lives in **`lib/site.ts`**, **`data/inventory.j
 > 1. The page is reachable by URL on the live site (it's hidden from Google via
 >    `robots`/`noindex`, but that's not access control). It exposes only the
 >    editing UI and the already-public inventory — no secret data. If you'd
->    rather lock it down, protect the `/admin/*` path at your host (e.g.
->    **Cloudflare Access** or HTTP Basic Auth), or simply run the tool locally
->    with `npm run dev` and never rely on the hosted copy.
+>    rather lock it down, add a free email login with **Cloudflare Access** —
+>    step-by-step in **HOSTING.md → "Lock the /admin page with a login"** — or
+>    simply run the tool locally with `npm run dev` and never rely on the hosted copy.
 > 2. If you ever hand-edit `data/inventory.json` instead of using `/admin`, keep
 >    it valid JSON (run it through a JSON validator before committing) — a syntax
 >    error will stop the next build.

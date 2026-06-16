@@ -67,6 +67,36 @@ and a free Cloudflare account.
    Cloudflare shows you in that registrar's DNS settings.
 3. HTTPS is provisioned automatically — nothing else to do.
 
+### Lock the `/admin` page with a login (Cloudflare Access — free)
+
+The inventory manager at `saharmotors.com/admin` has no password on its own. Put a
+free **email login** in front of it with **Cloudflare Access** — do this once, after
+the site is deployed on Cloudflare Pages with the custom domain:
+
+1. In the Cloudflare dashboard, open **Zero Trust** (left sidebar). The first time, it
+   asks you to pick a **team name** and a plan — choose the **Free** plan (up to 50 users).
+2. **Access → Applications → Add an application → Self-hosted**.
+3. **Application name:** `Sahar Motors Admin`. **Session duration:** e.g. 24 hours.
+4. Under **Application domain**, add:
+   - Domain `saharmotors.com`, **Path:** `admin`
+   - Click **+ Add** and add a second row: Domain `saharmotors.com`, **Path:** `admin/*`
+     (so every sub-page is covered).
+5. **Identity providers:** the built-in **One-time PIN** is enabled by default — it emails
+   a login code, so there's nothing else to set up. (You can add Google later if you want.)
+6. **Next → add a policy:**
+   - **Action:** Allow
+   - **Include → Emails →** list who's allowed in, e.g. `sales@saharmotors.com`, the
+     owner's email, and yours.
+7. **Save / Add application.**
+
+Now visiting `saharmotors.com/admin` shows a Cloudflare login screen; only the emails you
+listed can enter (they type their email, get a 6-digit code, and they're in). Everyone else
+is blocked before the page loads. To add/remove people later, edit the policy's email list.
+
+> The page already has `noindex` (keeps it out of Google); Cloudflare Access adds the
+> actual lock. Prefer not to expose it at all? Just run the tool locally with
+> `npm run dev` → `http://localhost:3000/admin` and skip the hosted copy.
+
 ---
 
 ## Option B — Netlify (also free, but now metered — read the caveat)

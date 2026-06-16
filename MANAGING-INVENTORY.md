@@ -31,6 +31,11 @@ Desktop app)** and the **quick web way (github.com)**. Both are covered below.
 
 The **/admin** tool is a friendly form that builds the listing data for you.
 
+> 🧪 **Want to practice first?** Open **`sahar-motors-admin-demo.html`** (double-click —
+> it opens in your browser). It's a standalone copy of this tool you can play with
+> safely: add/edit cars and click *Download inventory.json*. Nothing it does affects
+> the live site — it only downloads a file.
+
 ### A. Open the admin tool
 - **On the live site:** go to your website address followed by **`/admin`**
   (for example `https://your-site.com/admin`).
