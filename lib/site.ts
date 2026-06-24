@@ -53,8 +53,7 @@ export const site = {
   // --- Social ------------------------------------------------------------
   // PLACEHOLDER links — replace with the dealership's real profiles.
   social: {
-    instagram: "https://www.instagram.com/",
-    facebook: "https://www.facebook.com/",
+    instagram: "https://www.instagram.com/saharmotors"
   },
 
   // --- Integrations ------------------------------------------------------
@@ -68,7 +67,7 @@ export const site = {
   // (the value ships in the page code) — fine because /admin just downloads a JSON
   // file and exposes no private data. Change it from "password", and for real
   // protection enable Cloudflare Access (see HOSTING.md → "Lock the /admin page").
-  adminPassword: "password",
+  adminPassword: "Saharmotors123",
 } as const;
 
 /** True when forms are wired to a real Web3Forms key. */
