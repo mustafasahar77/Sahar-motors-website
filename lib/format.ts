@@ -21,13 +21,15 @@ export function formatPrice(price: number | null | undefined): string {
   return priceFormatter.format(price);
 }
 
-/** "84,500 km" — guards against missing/invalid odometer values. */
+/** "84,500 km" — guards against missing/invalid odometer values.
+ * Used inventory never has a legitimate 0 km, so a 0/blank odometer (a listing
+ * with no stated mileage) renders as "N/A" rather than a misleading "0 km". */
 export function formatMileage(mileage: number | null | undefined): string {
   if (
     mileage === null ||
     mileage === undefined ||
     !Number.isFinite(mileage) ||
-    mileage < 0
+    mileage <= 0
   ) {
     return "N/A";
   }
