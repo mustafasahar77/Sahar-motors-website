@@ -23,11 +23,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: p.priority,
   }));
 
+  // Vehicles are served by the live client view (/inventory/view/?id=…). This
+  // lists the cars known at build time; newly-posted cars surface via /inventory/.
   const vehicleEntries: MetadataRoute.Sitemap = getAllVehicles().map((v) => ({
-    url: `${base}/inventory/${v.id}/`,
+    url: `${base}/inventory/view/?id=${encodeURIComponent(v.id)}`,
     lastModified: v.dateAdded || undefined,
     changeFrequency: "weekly",
-    priority: 0.6,
+    priority: 0.5,
   }));
 
   return [...staticEntries, ...vehicleEntries];

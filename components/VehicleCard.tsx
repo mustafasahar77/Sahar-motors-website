@@ -18,7 +18,8 @@ const statusBadge: Record<string, { label: string; className: string }> = {
 
 export default function VehicleCard({ vehicle, priority }: VehicleCardProps) {
   const title = vehicleTitle(vehicle);
-  const href = `/inventory/${vehicle.id}/`;
+  // Live (client-rendered) detail view so brand-new cars resolve without a rebuild.
+  const href = `/inventory/view/?id=${encodeURIComponent(vehicle.id)}`;
   const badge = statusBadge[vehicle.status];
   const photoCount = vehicle.images.length;
 
