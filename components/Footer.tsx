@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import { NAV_LINKS, site, fullAddress } from "@/lib/site";
-import { Phone, Mail, MapPin, Instagram, Facebook } from "@/components/icons";
+import { Phone, Mail, MapPin, Instagram } from "@/components/icons";
 
 const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
   site.mapsQuery,
@@ -29,15 +29,6 @@ export default function Footer() {
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-brand-500"
             >
               <Instagram size={17} />
-            </a>
-            <a
-              href={site.social.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Sahar Motors on Facebook"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-brand-500"
-            >
-              <Facebook size={17} />
             </a>
           </div>
         </div>

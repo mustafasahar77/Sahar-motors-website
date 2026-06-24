@@ -13,7 +13,6 @@ import {
   Menu,
   X,
   Instagram,
-  Facebook,
   ArrowRight,
 } from "@/components/icons";
 
@@ -54,15 +53,6 @@ export default function Navbar() {
               className="transition-colors hover:text-white"
             >
               <Instagram size={15} />
-            </a>
-            <a
-              href={site.social.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Sahar Motors on Facebook"
-              className="transition-colors hover:text-white"
-            >
-              <Facebook size={15} />
             </a>
           </div>
         </div>
