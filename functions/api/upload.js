@@ -1,4 +1,4 @@
-// POST /api/upload?carId=<id>&ext=jpg  → stores the raw image body in R2 (admin only)
+// POST /api/upload?carId=<id>&ext=jpg  → stores the raw image body in KV (admin only)
 // Returns { url: "/img/cars/<id>/<uuid>.jpg" } to save into the vehicle's images[].
 import { json, bad, checkAuth } from "../_lib.js";
 
@@ -6,7 +6,7 @@ const MAX_BYTES = 8 * 1024 * 1024; // 8 MB safety cap (client resizes well below
 
 export async function onRequestPost({ request, env }) {
   if (!checkAuth(request, env)) return bad("Unauthorized", 401);
-  if (!env.BUCKET) return bad("Photo storage not configured", 503);
+  if (!env.PHOTOS) return bad("Photo storage not configured", 503);
 
   const url = new URL(request.url);
   const carId = (url.searchParams.get("carId") || "misc").toLowerCase().replace(/[^a-z0-9-]/g, "") || "misc";
@@ -18,6 +18,6 @@ export async function onRequestPost({ request, env }) {
   if (body.byteLength > MAX_BYTES) return bad("Image too large (max 8 MB)");
 
   const key = `cars/${carId}/${crypto.randomUUID()}.${ext}`;
-  await env.BUCKET.put(key, body, { httpMetadata: { contentType } });
+  await env.PHOTOS.put(key, body, { metadata: { contentType } });
   return json({ ok: true, url: `/img/${key}` });
 }

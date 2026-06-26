@@ -14,12 +14,12 @@ export async function onRequestDelete({ params, env, request }) {
   if (!env.DB) return bad("Database not configured", 503);
 
   const row = await env.DB.prepare("SELECT images FROM vehicles WHERE id = ?").bind(params.id).first();
-  if (row && env.BUCKET) {
+  if (row && env.PHOTOS) {
     try {
       const imgs = JSON.parse(row.images || "[]");
       for (const u of imgs) {
         if (typeof u === "string" && u.startsWith("/img/")) {
-          await env.BUCKET.delete(u.slice("/img/".length));
+          await env.PHOTOS.delete(u.slice("/img/".length));
         }
       }
     } catch { /* best-effort photo cleanup */ }
