@@ -63,11 +63,9 @@ export const site = {
   web3formsAccessKey: "df44d32d-05da-44ee-aacb-7357cc7d86cf", // Contact form
   web3formsSellAccessKey: "f9e3b6e3-9e6a-42cf-985b-7e264cd49e35", // Sell / trade form
 
-  // Basic password gate for the /admin page. This is a CLIENT-SIDE deterrent only
-  // (the value ships in the page code) — fine because /admin just downloads a JSON
-  // file and exposes no private data. Change it from "password", and for real
-  // protection enable Cloudflare Access (see HOSTING.md → "Lock the /admin page").
-  adminPassword: "Saharmotors123",
+  // The /admin login is verified server-side against the ADMIN_PASSWORD secret
+  // (Cloudflare Pages → Settings → Variables and Secrets). It is intentionally
+  // NOT stored here, so it never ships in the public code/repo.
 } as const;
 
 /** True when forms are wired to a real Web3Forms key. */
