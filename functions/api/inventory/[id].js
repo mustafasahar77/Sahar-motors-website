@@ -10,20 +10,29 @@ export async function onRequestGet({ params, env }) {
 }
 
 export async function onRequestDelete({ params, env, request }) {
-  if (!checkAuth(request, env)) return bad("Unauthorized", 401);
+  if (!(await checkAuth(request, env))) return bad("Unauthorized", 401);
   if (!env.DB) return bad("Database not configured", 503);
 
   const row = await env.DB.prepare("SELECT images FROM vehicles WHERE id = ?").bind(params.id).first();
+  await env.DB.prepare("DELETE FROM vehicles WHERE id = ?").bind(params.id).run();
+
   if (row && env.PHOTOS) {
     try {
-      const imgs = JSON.parse(row.images || "[]");
-      for (const u of imgs) {
-        if (typeof u === "string" && u.startsWith("/img/")) {
-          await env.PHOTOS.delete(u.slice("/img/".length));
+      const mine = JSON.parse(row.images || "[]").filter((u) => typeof u === "string" && u.startsWith("/img/"));
+      if (mine.length) {
+        // Never delete a photo another vehicle still references (e.g. a duplicate).
+        const others = await env.DB.prepare("SELECT images FROM vehicles").all();
+        const referenced = new Set();
+        for (const r of others.results || []) {
+          try { JSON.parse(r.images || "[]").forEach((u) => referenced.add(u)); } catch { /* skip */ }
+        }
+        for (const u of mine) {
+          if (!referenced.has(u)) {
+            try { await env.PHOTOS.delete(u.slice("/img/".length)); } catch { /* per-photo best effort */ }
+          }
         }
       }
     } catch { /* best-effort photo cleanup */ }
   }
-  await env.DB.prepare("DELETE FROM vehicles WHERE id = ?").bind(params.id).run();
   return json({ ok: true });
 }

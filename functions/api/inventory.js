@@ -9,7 +9,7 @@ export async function onRequestGet({ env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!checkAuth(request, env)) return bad("Unauthorized", 401);
+  if (!(await checkAuth(request, env))) return bad("Unauthorized", 401);
   if (!env.DB) return bad("Database not configured", 503);
   let body;
   try { body = await request.json(); } catch { return bad("Invalid JSON body"); }
@@ -17,8 +17,9 @@ export async function onRequestPost({ request, env }) {
   const v = sanitizeVehicle(body);
   if (!v) return bad("Make and model are required");
 
-  // body.originalId is sent when editing so we don't fork the record into a new id.
-  v.id = await uniqueId(env, v.id, body.originalId);
+  // On edit, the original id is canonical — update that row in place, never fork
+  // into a new one. On create, ensure the derived id is unique.
+  v.id = body.originalId ? String(body.originalId) : await uniqueId(env, v.id);
   await upsert(env, v);
 
   const row = await env.DB.prepare("SELECT * FROM vehicles WHERE id = ?").bind(v.id).first();

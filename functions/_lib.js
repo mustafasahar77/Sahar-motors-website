@@ -17,13 +17,20 @@ export function bad(message, status = 400) {
 }
 
 // Writes require `Authorization: Bearer <ADMIN_PASSWORD>`. Reads are public.
-// Constant-time-ish comparison so the password can't be timing-probed.
-export function checkAuth(request, env) {
+// Compares fixed-length SHA-256 digests so neither the length nor the content of
+// ADMIN_PASSWORD leaks via timing. Async because it uses WebCrypto.
+export async function checkAuth(request, env) {
   const got = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
   const want = env.ADMIN_PASSWORD || "";
-  if (!want || got.length !== want.length) return false;
+  if (!want) return false; // no secret configured → deny all writes
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(got)),
+    crypto.subtle.digest("SHA-256", enc.encode(want)),
+  ]);
+  const av = new Uint8Array(a), bv = new Uint8Array(b);
   let diff = 0;
-  for (let i = 0; i < got.length; i++) diff |= got.charCodeAt(i) ^ want.charCodeAt(i);
+  for (let i = 0; i < av.length; i++) diff |= av[i] ^ bv[i];
   return diff === 0;
 }
 

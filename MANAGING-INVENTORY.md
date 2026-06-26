@@ -38,8 +38,10 @@ The **/admin** tool is a friendly form that builds the listing data for you.
 
 ### A. Open the admin tool
 - **On the live site:** go to your website address followed by **`/admin`**
-  (for example `https://saharmotors.com/admin`) and enter the admin password
-  (currently **`password`** — change it in `lib/site.ts` → `adminPassword`; see HOSTING.md).
+  (for example `https://saharmotors.com/admin`) and enter the admin password.
+  It is a private Cloudflare secret (`ADMIN_PASSWORD`), never stored in the code —
+  ask Hamid for it. **Note:** the current one-click admin is described in
+  **GO-LIVE-WALKTHROUGH.md**; the steps below describe the older manual flow.
 - **Or on your computer** (no internet needed): open the project folder, and if
   you have it running locally it's at `http://localhost:3000/admin`.
 

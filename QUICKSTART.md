@@ -48,8 +48,10 @@ Edit it, push, and the whole site updates. (See HANDOFF.md §1.)
 ---
 
 ## 4. The /admin login (important)
-- Right now `/admin` is protected by a **single shared password** (`password`).
-  **Change it:** edit `lib/site.ts` → `adminPassword`, then push.
+- `/admin` is protected by a password verified **server-side** against the
+  Cloudflare secret `ADMIN_PASSWORD` — it is **never** stored in the code/repo.
+  **Change it:** `wrangler pages secret put ADMIN_PASSWORD --project-name sahar-motors-website`
+  (or dashboard → Pages project → Settings → Variables and Secrets).
 - This is a basic gate (the password lives in the page code). The tool only
   *downloads a file*, so risk is low — but for a proper **per-person email login**,
   turn on **Cloudflare Access** (free). Step-by-step in **HOSTING.md → "Lock the

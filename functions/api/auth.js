@@ -3,6 +3,6 @@
 import { json, bad, checkAuth } from "../_lib.js";
 
 export async function onRequestPost({ request, env }) {
-  if (!checkAuth(request, env)) return bad("Unauthorized", 401);
+  if (!(await checkAuth(request, env))) return bad("Unauthorized", 401);
   return json({ ok: true });
 }

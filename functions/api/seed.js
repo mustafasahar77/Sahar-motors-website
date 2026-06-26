@@ -4,7 +4,7 @@
 import { json, bad, checkAuth, sanitizeVehicle, upsert } from "../_lib.js";
 
 export async function onRequestPost({ request, env }) {
-  if (!checkAuth(request, env)) return bad("Unauthorized", 401);
+  if (!(await checkAuth(request, env))) return bad("Unauthorized", 401);
   if (!env.DB) return bad("Database not configured", 503);
   let body;
   try { body = await request.json(); } catch { return bad("Invalid JSON body"); }

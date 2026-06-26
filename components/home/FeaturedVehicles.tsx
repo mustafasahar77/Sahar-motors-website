@@ -1,11 +1,45 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Container from "@/components/Container";
 import VehicleCard from "@/components/VehicleCard";
 import { getFeaturedVehicles } from "@/lib/inventory";
+import { apiList } from "@/lib/adminApi";
+import type { Vehicle } from "@/lib/types";
 import { ArrowRight } from "@/components/icons";
 
+// Mirror lib/inventory getFeaturedVehicles: flagged-available first, then newest
+// available, capped at `limit`.
+function pickFeatured(all: Vehicle[], limit = 6): Vehicle[] {
+  const available = all.filter((v) => v.status !== "sold");
+  const flagged = available.filter((v) => v.featured);
+  const rest = available
+    .filter((v) => !v.featured)
+    .sort((a, b) => (b.dateAdded || "").localeCompare(a.dateAdded || ""));
+  return [...flagged, ...rest].slice(0, limit);
+}
+
 export default function FeaturedVehicles() {
-  const vehicles = getFeaturedVehicles(6);
+  // Seed with the build-time set so the section renders immediately (and in the
+  // prerendered HTML), then refresh to live data after mount so a freshly-posted
+  // or newly-featured car shows up without a rebuild.
+  const [vehicles, setVehicles] = useState<Vehicle[]>(() => getFeaturedVehicles(6));
+
+  useEffect(() => {
+    let alive = true;
+    apiList()
+      .then((list) => {
+        if (alive && Array.isArray(list) && list.length) setVehicles(pickFeatured(list));
+      })
+      .catch(() => {
+        /* keep the seeded build-time set on failure */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   if (vehicles.length === 0) return null;
 
   return (

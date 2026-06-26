@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import currentInventory from "@/data/inventory.json";
 import { OPTIONS } from "@/lib/site";
@@ -118,6 +118,7 @@ export default function AdminApp() {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const toastTimer = useRef<number | null>(null);
 
   async function load() {
     try {
@@ -134,12 +135,15 @@ export default function AdminApp() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
+    return () => {
+      if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    };
   }, []);
 
   function flash(kind: "ok" | "err", msg: string) {
     setToast({ kind, msg });
-    window.clearTimeout((flash as unknown as { t?: number }).t);
-    (flash as unknown as { t?: number }).t = window.setTimeout(() => setToast(null), 4000);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 4000);
   }
 
   const sorted = useMemo(
@@ -175,7 +179,8 @@ export default function AdminApp() {
       await load();
       setMode("list");
       setEditingId(null);
-      flash("ok", editingId ? "Changes saved — live now." : `Posted! "${res.vehicle.make} ${res.vehicle.model}" is live.`);
+      const label = [res.vehicle?.make, res.vehicle?.model].filter(Boolean).join(" ") || "Vehicle";
+      flash("ok", editingId ? "Changes saved — live now." : `Posted! "${label}" is live.`);
     } catch (e) {
       flash("err", (e as Error).message);
     } finally {
