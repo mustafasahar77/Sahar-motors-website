@@ -2,37 +2,54 @@
 
 import { useEffect, useState } from "react";
 import AdminApp from "@/components/admin/AdminApp";
-import { site } from "@/lib/site";
+import { apiCheckPassword, getToken, setToken, clearToken } from "@/lib/adminApi";
 import { ShieldCheck } from "@/components/icons";
 
 /**
- * Lightweight password gate for the /admin tool. Client-side only — a deterrent,
- * not real security (the password lives in the bundle). For proper protection put
- * Cloudflare Access in front of /admin (see HOSTING.md). Unlock persists for the
- * browser session only.
+ * Login for the /admin tool. The password is verified server-side against the
+ * ADMIN_PASSWORD secret (via /api/auth) and kept for the browser session only.
  */
 export default function AdminGate() {
   const [ok, setOk] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [pw, setPw] = useState("");
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  // Client-only: re-open without re-entering the password within the same session.
+  // Re-open without re-entering the password if a valid session token exists.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (sessionStorage.getItem("sm_admin_ok") === "1") setOk(true);
+    const t = getToken();
+    if (!t) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setChecking(false);
+      return;
+    }
+    apiCheckPassword(t).then((valid) => {
+      if (valid) setOk(true);
+      else clearToken();
+      setChecking(false);
+    });
   }, []);
 
-  if (ok) return <AdminApp />;
-
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (pw === site.adminPassword) {
-      sessionStorage.setItem("sm_admin_ok", "1");
+    setBusy(true);
+    setErr("");
+    const valid = await apiCheckPassword(pw);
+    setBusy(false);
+    if (valid) {
+      setToken(pw);
       setOk(true);
     } else {
-      setErr(true);
+      setErr("Incorrect password — or the backend isn't set up yet (see ADMIN-BACKEND-SETUP.md).");
     }
   }
+
+  if (checking) {
+    return <div className="py-24 text-center text-slate-500">Loading…</div>;
+  }
+
+  if (ok) return <AdminApp />;
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
@@ -43,18 +60,14 @@ export default function AdminGate() {
         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-navy-50 text-brand-500">
           <ShieldCheck size={22} />
         </span>
-        <h1 className="mt-4 text-xl font-extrabold text-navy-900">
-          Inventory Manager
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Enter the admin password to continue.
-        </p>
+        <h1 className="mt-4 text-xl font-extrabold text-navy-900">Inventory Manager</h1>
+        <p className="mt-1 text-sm text-slate-600">Enter the admin password to continue.</p>
         <input
           type="password"
           value={pw}
           onChange={(e) => {
             setPw(e.target.value);
-            setErr(false);
+            setErr("");
           }}
           placeholder="Password"
           autoFocus
@@ -63,14 +76,15 @@ export default function AdminGate() {
         />
         {err && (
           <p role="alert" className="mt-2 text-sm text-red-600">
-            Incorrect password.
+            {err}
           </p>
         )}
         <button
           type="submit"
-          className="mt-3 w-full rounded-lg bg-brand-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+          disabled={busy || !pw}
+          className="mt-3 w-full rounded-lg bg-brand-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60"
         >
-          Unlock
+          {busy ? "Checking…" : "Unlock"}
         </button>
       </form>
     </div>

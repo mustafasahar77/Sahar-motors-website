@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
-import InventoryBrowser from "@/components/InventoryBrowser";
-import {
-  getAllVehicles,
-  getAvailableVehicles,
-  availableVehicleCount,
-} from "@/lib/inventory";
-import { computeFacets } from "@/lib/filters";
+import LiveInventory from "@/components/LiveInventory";
 
 export const metadata: Metadata = {
   title: "Used Car Inventory",
@@ -16,21 +10,16 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryPage() {
-  const vehicles = getAllVehicles();
-  // Facets (option counts + numeric ranges) are derived from the default,
-  // non-sold view so a sold-only value never shows a count that yields zero
-  // results. Sold cars still load (passed below) for the "include sold" toggle.
-  const facets = computeFacets(getAvailableVehicles());
-
   return (
     <>
       <PageHeader
         title="Our Inventory"
-        subtitle={`Explore our selection of ${availableVehicleCount} quality pre-owned vehicles. Every vehicle is inspected and priced to move.`}
+        subtitle="Explore our selection of quality pre-owned vehicles. Every vehicle is inspected and priced to move."
         breadcrumb={[{ label: "Home", href: "/" }, { label: "Inventory" }]}
       />
+      {/* Inventory loads live from the backend so newly-posted cars appear instantly. */}
       <div className="py-8 sm:py-10">
-        <InventoryBrowser vehicles={vehicles} facets={facets} />
+        <LiveInventory />
       </div>
     </>
   );

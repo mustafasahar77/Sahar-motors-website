@@ -1,0 +1,17 @@
+# Cloudflare Pages config. Declares the Functions' bindings in code so they're
+# wired automatically on every deploy (no dashboard "bindings" screens needed).
+# The ADMIN_PASSWORD is a secret, set separately via `wrangler pages secret put`.
+name = "sahar-motors-website"
+pages_build_output_dir = "out"
+compatibility_date = "2024-09-23"
+
+# Inventory database
+[[d1_databases]]
+binding = "DB"
+database_name = "sahar-motors"
+database_id = "92d05df9-ec83-43e3-8cc3-2b6fd0d55f24"
+
+# Photo storage (KV — no billing required)
+[[kv_namespaces]]
+binding = "PHOTOS"
+id = "28e842296f5b4dc0a6b292390f9ab11b"
