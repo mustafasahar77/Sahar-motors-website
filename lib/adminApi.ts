@@ -118,9 +118,14 @@ export async function toUploadableJpeg(file: File, maxW = 1400, quality = 0.82):
   let bitmap = await decodeBitmap(file);
 
   if (!bitmap && isHeic(file)) {
-    const heic2any = (await import("heic2any")).default;
-    const out = await heic2any({ blob: file, toType: "image/jpeg", quality });
-    const jpeg = Array.isArray(out) ? out[0] : out;
+    let jpeg: Blob;
+    try {
+      const heic2any = (await import("heic2any")).default;
+      const out = await heic2any({ blob: file, toType: "image/jpeg", quality });
+      jpeg = Array.isArray(out) ? out[0] : out;
+    } catch {
+      throw new Error("couldn't convert this iPhone photo — in Photos, export it as JPEG and try again.");
+    }
     bitmap = await decodeBitmap(jpeg);
     if (!bitmap) return jpeg; // converted but can't re-decode to resize — upload as-is
   }

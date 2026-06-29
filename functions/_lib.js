@@ -77,17 +77,25 @@ export function rowToVehicle(r) {
   };
 }
 
+// Trim to a string and cap length, so an admin can't bloat D1 rows with huge text.
+function cap(v, n) { return String(v || "").trim().slice(0, n); }
+function capArr(v, maxItems, maxLen) {
+  return JSON.stringify(
+    (Array.isArray(v) ? v : []).map((x) => cap(x, maxLen)).filter(Boolean).slice(0, maxItems),
+  );
+}
+
 // Clean + coerce arbitrary admin input into a safe DB record. Null if unusable.
 export function sanitizeVehicle(input, todayISO) {
-  const make = String(input.make || "").trim();
-  const model = String(input.model || "").trim();
+  const make = cap(input.make, 80);
+  const model = cap(input.model, 80);
   if (!make || !model) return null;
   const year = intOrNull(input.year) || 0;
   const id = slug(input.id) || slug([year, make, model, input.trim].filter(Boolean).join(" ")) || slug(`${make}-${model}`);
   const priceN = intOrNull(input.price);
   return {
     id,
-    make, model, trim: String(input.trim || "").trim(),
+    make, model, trim: cap(input.trim, 60),
     year,
     price: priceN !== null && priceN > 0 ? priceN : null,
     mileage: Math.max(0, intOrNull(input.mileage) || 0),
@@ -95,22 +103,22 @@ export function sanitizeVehicle(input, todayISO) {
     fuelType: pick(input.fuelType, FUEL, "Gasoline"),
     transmission: pick(input.transmission, TRANS, "Automatic"),
     drivetrain: pick(input.drivetrain, DRIVE, "FWD"),
-    exteriorColor: String(input.exteriorColor || "").trim(),
-    interiorColor: String(input.interiorColor || "").trim(),
-    engine: String(input.engine || "").trim(),
+    exteriorColor: cap(input.exteriorColor, 60),
+    interiorColor: cap(input.interiorColor, 60),
+    engine: cap(input.engine, 120),
     cylinders: intOrNull(input.cylinders) || 0,
     doors: intOrNull(input.doors) || 0,
     seats: intOrNull(input.seats) || 0,
-    vin: String(input.vin || "").trim(),
-    stockNumber: String(input.stockNumber || "").trim(),
+    vin: cap(input.vin, 40),
+    stockNumber: cap(input.stockNumber, 60),
     condition: pick(input.condition, COND, "Used"),
     status: pick(input.status, STAT, "available"),
     featured: input.featured === true || input.featured === 1 || input.featured === "true" ? 1 : 0,
-    description: String(input.description || "").trim(),
-    features: JSON.stringify(Array.isArray(input.features) ? input.features.map((x) => String(x).trim()).filter(Boolean) : []),
-    images: JSON.stringify(Array.isArray(input.images) ? input.images.map((x) => String(x).trim()).filter(Boolean) : []),
-    carfaxUrl: String(input.carfaxUrl || "").trim(),
-    dateAdded: String(input.dateAdded || "").trim() || todayISO || new Date().toISOString().slice(0, 10),
+    description: cap(input.description, 8000),
+    features: capArr(input.features, 60, 120),
+    images: capArr(input.images, 40, 500),
+    carfaxUrl: cap(input.carfaxUrl, 500),
+    dateAdded: cap(input.dateAdded, 10) || todayISO || new Date().toISOString().slice(0, 10),
   };
 }
 

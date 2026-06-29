@@ -17,9 +17,16 @@ export async function onRequestPost({ request, env }) {
   const v = sanitizeVehicle(body);
   if (!v) return bad("Make and model are required");
 
-  // On edit, the original id is canonical — update that row in place, never fork
-  // into a new one. On create, ensure the derived id is unique.
-  v.id = body.originalId ? String(body.originalId) : await uniqueId(env, v.id);
+  // On edit, the original id is canonical — verify the row exists, then update it
+  // in place (never fork). On create, ensure the derived id is unique.
+  if (body.originalId) {
+    const orig = String(body.originalId);
+    const exists = await env.DB.prepare("SELECT id FROM vehicles WHERE id = ?").bind(orig).first();
+    if (!exists) return bad("The vehicle you're editing no longer exists.", 404);
+    v.id = orig;
+  } else {
+    v.id = await uniqueId(env, v.id);
+  }
   await upsert(env, v);
 
   const row = await env.DB.prepare("SELECT * FROM vehicles WHERE id = ?").bind(v.id).first();

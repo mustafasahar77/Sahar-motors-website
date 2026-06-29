@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Container from "@/components/Container";
 import HomeSearch from "@/components/home/HomeSearch";
+import LiveStockCount from "@/components/home/LiveStockCount";
 import { site } from "@/lib/site";
 import { Car, Wrench, ShieldCheck, ArrowRight } from "@/components/icons";
 
@@ -60,8 +61,7 @@ export default function Hero({ makes, bodyTypes, vehicleCount }: HeroProps) {
         {/* Trust row */}
         <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-2 text-sm text-navy-100">
           <li className="inline-flex items-center gap-2">
-            <span className="font-bold text-white">{vehicleCount}</span> vehicles
-            in stock
+            <LiveStockCount fallback={vehicleCount} /> vehicles in stock
           </li>
           <li className="inline-flex items-center gap-2">
             <ShieldCheck size={16} className="text-brand-400" /> Every vehicle

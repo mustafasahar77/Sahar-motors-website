@@ -80,6 +80,25 @@ function getSimilar(current: Vehicle, pool: Vehicle[]): Vehicle[] {
   return scored.slice(0, 3).map((s) => s.v);
 }
 
+function setMeta(attr: "name" | "property", key: string, content: string) {
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content);
+}
+function setLink(rel: string, href: string) {
+  let el = document.head.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement("link");
+    el.setAttribute("rel", rel);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", href);
+}
+
 export default function VehicleViewPage() {
   const [id, setId] = useState<string | null>(null);
   const [urlRead, setUrlRead] = useState(false);
@@ -122,8 +141,27 @@ export default function VehicleViewPage() {
     };
   }, [urlRead, id]);
 
+  // Per-vehicle SEO: this is a client-rendered route (for instant new cars), so
+  // set the document title + meta/canonical/OG tags after the vehicle loads.
+  // Googlebot renders JS and indexes these; the static site-level OG is the
+  // fallback for non-JS social scrapers.
   useEffect(() => {
-    if (vehicle) document.title = `${vehicleTitle(vehicle)} | ${site.name}`;
+    if (!vehicle) return;
+    const title = `${vehicleTitle(vehicle)} | ${site.name}`;
+    document.title = title;
+    const desc = (vehicle.description ||
+      `${vehicleTitle(vehicle)} at ${site.name} in ${site.address.city}, ${site.address.province}.`).slice(0, 160);
+    const url = `${site.url}/inventory/view/?id=${encodeURIComponent(vehicle.id)}`;
+    const first = vehicle.images[0];
+    const img = first ? (first.startsWith("http") ? first : `${site.url}${first}`) : `${site.url}/og.png`;
+    setMeta("name", "description", desc);
+    setLink("canonical", url);
+    setMeta("property", "og:title", title);
+    setMeta("property", "og:description", desc);
+    setMeta("property", "og:image", img);
+    setMeta("property", "og:url", url);
+    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:image", img);
   }, [vehicle]);
 
   if (vehicle === undefined) {

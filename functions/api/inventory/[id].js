@@ -1,5 +1,5 @@
 // GET    /api/inventory/:id  → public single vehicle
-// DELETE /api/inventory/:id  → delete vehicle + its R2 photos (admin only)
+// DELETE /api/inventory/:id  → delete vehicle + its KV photos (admin only)
 import { json, bad, checkAuth, rowToVehicle } from "../../_lib.js";
 
 export async function onRequestGet({ params, env }) {
