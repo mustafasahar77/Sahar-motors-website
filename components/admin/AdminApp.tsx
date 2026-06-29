@@ -427,7 +427,14 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
   const [uploading, setUploading] = useState(0);
 
   async function handleFiles(files: File[]) {
-    const images = files.filter((f) => f.type.startsWith("image/"));
+    // Accept by MIME OR extension — iPhone HEIC files often arrive with an empty
+    // type and would otherwise be silently dropped.
+    const IMG_EXT = /\.(jpe?g|png|gif|webp|bmp|avif|heic|heif)$/i;
+    const images = files.filter((f) => f.type.startsWith("image/") || IMG_EXT.test(f.name));
+    const skipped = files.length - images.length;
+    if (skipped > 0) {
+      onUploadError(`Skipped ${skipped} file${skipped === 1 ? "" : "s"} that ${skipped === 1 ? "isn't a photo" : "aren't photos"}.`);
+    }
     if (images.length === 0) return;
     setUploading((u) => u + images.length);
     const carId = carIdFor(form);
@@ -436,7 +443,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
         const url = await apiUpload(file, carId);
         setForm((f) => ({ ...f, images: [...f.images.filter(Boolean), url] }));
       } catch (e) {
-        onUploadError(`Upload failed: ${(e as Error).message}`);
+        onUploadError(`Couldn't add ${file.name}: ${(e as Error).message}`);
       } finally {
         setUploading((u) => u - 1);
       }
@@ -524,7 +531,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
               Drag &amp; drop photos here, or{" "}
               <label className="cursor-pointer font-semibold text-brand-600 hover:underline">
                 browse
-                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { handleFiles(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
+                <input type="file" accept="image/*,.heic,.heif" multiple className="hidden" onChange={(e) => { handleFiles(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
               </label>
             </p>
             <p className="mt-1 text-xs text-slate-500">Photos are shrunk for the web and uploaded automatically. First photo is the cover.</p>

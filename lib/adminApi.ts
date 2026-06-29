@@ -95,14 +95,40 @@ export async function apiSeed(vehicles: unknown[]): Promise<{ seeded: number; sk
   return { seeded: d.seeded || 0, skipped: d.skipped || 0 };
 }
 
-/** Downscale an image File to a web-friendly JPEG before upload. */
-export async function resizeImage(file: File, maxW = 1400, quality = 0.82): Promise<Blob> {
-  let bitmap: ImageBitmap | null = null;
+const HEIC_RE = /^image\/(heic|heif)$/i;
+function isHeic(file: File): boolean {
+  return HEIC_RE.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+}
+async function decodeBitmap(src: Blob): Promise<ImageBitmap | null> {
   try {
-    bitmap = await createImageBitmap(file);
+    return await createImageBitmap(src);
   } catch {
-    return file; // unsupported format — upload as-is
+    return null;
   }
+}
+
+/**
+ * Turn any common phone/computer photo — including iPhone HEIC/HEIF, which most
+ * browsers can't decode or display — into a web-friendly JPEG Blob. HEIC is
+ * converted with heic2any first (loaded on demand). Throws a clear, user-facing
+ * message when the file isn't a usable image, so the caller can surface it
+ * instead of silently failing.
+ */
+export async function toUploadableJpeg(file: File, maxW = 1400, quality = 0.82): Promise<Blob> {
+  let bitmap = await decodeBitmap(file);
+
+  if (!bitmap && isHeic(file)) {
+    const heic2any = (await import("heic2any")).default;
+    const out = await heic2any({ blob: file, toType: "image/jpeg", quality });
+    const jpeg = Array.isArray(out) ? out[0] : out;
+    bitmap = await decodeBitmap(jpeg);
+    if (!bitmap) return jpeg; // converted but can't re-decode to resize — upload as-is
+  }
+
+  if (!bitmap) {
+    throw new Error("couldn't read this photo — please use a JPEG or PNG image.");
+  }
+
   const scale = Math.min(1, maxW / bitmap.width);
   const w = Math.max(1, Math.round(bitmap.width * scale));
   const h = Math.max(1, Math.round(bitmap.height * scale));
@@ -112,25 +138,26 @@ export async function resizeImage(file: File, maxW = 1400, quality = 0.82): Prom
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     bitmap.close();
-    return file;
+    throw new Error("your browser couldn't process this photo.");
   }
   ctx.drawImage(bitmap, 0, 0, w, h);
   bitmap.close();
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob((b) => resolve(b), "image/jpeg", quality),
   );
-  return blob || file;
+  if (!blob) throw new Error("your browser couldn't process this photo.");
+  return blob;
 }
 
-/** Resize + upload a photo to R2; returns the public URL to store in images[]. */
+/** Convert + resize a photo to JPEG, upload it, return the public URL for images[]. */
 export async function apiUpload(file: File, carId: string): Promise<string> {
-  const blob = await resizeImage(file);
-  const r = await fetch(`/api/upload?carId=${encodeURIComponent(carId || "misc")}&ext=jpg`, {
+  const blob = await toUploadableJpeg(file);
+  const r = await fetch(`/api/upload?carId=${encodeURIComponent(carId || "misc")}`, {
     method: "POST",
     headers: { ...authHeader(), "content-type": "image/jpeg" },
     body: blob,
   });
   const d = (await r.json().catch(() => ({}))) as { error?: string; url?: string };
-  if (!r.ok || !d.url) throw new Error(d.error || "Upload failed");
+  if (!r.ok || !d.url) throw new Error(d.error || "upload failed");
   return d.url;
 }
