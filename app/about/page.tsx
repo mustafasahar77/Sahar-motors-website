@@ -43,7 +43,7 @@ const values = [
 ];
 
 const team = [
-  { name: "Mustafar Sahar", title: "Founder & CEO", image: "/team/mustafar-sahar.jpg" },
+  { name: "Mustafa Sahar", title: "Founder & CEO", image: "/team/mustafar-sahar.jpg" },
   { name: "Mujtaba Sahar", title: "Operations Director", image: "/team/mujataba-sahar.jpg" },
   { name: "Samiullah Mohib", title: "Sales Manager", image: "/team/samiullah-mohib.jpg" },
   { name: "Sajjad Liwal", title: "Sales Associate", image: "/team/sijad-liwal.jpg" },
