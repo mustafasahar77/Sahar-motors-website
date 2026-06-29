@@ -130,20 +130,18 @@ export async function toUploadableJpeg(file: File, maxW = 1400, quality = 0.82):
   let bitmap = await decodeBitmap(file);
 
   if (!bitmap && isHeic(file)) {
-    let jpeg: Blob;
+    // iPhone HEIC/HEIF (HEVC) — decode with heic-to (libheif). Its Next.js build
+    // handles the WASM bundling; "bitmap" gives us an ImageBitmap to resize directly.
     try {
-      const heic2any = (await import("heic2any")).default;
-      const out = await withTimeout(
-        heic2any({ blob: file, toType: "image/jpeg", quality }),
+      const { heicTo } = await import("heic-to/next");
+      bitmap = await withTimeout(
+        heicTo({ blob: file, type: "bitmap" }),
         45000,
         "conversion timed out",
       );
-      jpeg = Array.isArray(out) ? out[0] : out;
     } catch {
       throw new Error("couldn't convert this iPhone photo — in Photos, export it as JPEG (or set Camera → Formats → Most Compatible) and try again.");
     }
-    bitmap = await decodeBitmap(jpeg);
-    if (!bitmap) return jpeg; // converted but can't re-decode to resize — upload as-is
   }
 
   if (!bitmap) {
