@@ -58,10 +58,21 @@ const STAT = ["available", "pending", "sold"];
 
 function pick(v, allow, def) { return allow.includes(v) ? v : def; }
 function intOrNull(v) { const n = parseInt(v, 10); return Number.isFinite(n) ? n : null; }
-function safeArr(s) { try { const a = JSON.parse(s || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } }
+export function safeArr(s) { try { const a = JSON.parse(s || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } }
 function slug(s) {
   return String(s || "").normalize("NFKD").toLowerCase()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").replace(/-{2,}/g, "-");
+}
+// Only let http(s) URLs reach an <a href> — blocks javascript:/data: values that
+// would otherwise become stored XSS when rendered on the public vehicle page.
+function safeHttpUrl(s) {
+  const u = String(s || "").trim();
+  return /^https?:\/\//i.test(u) ? u : "";
+}
+// intOrNull + clamp into [min,max]; returns def when the value isn't a number.
+function clampInt(v, min, max, def = 0) {
+  const n = intOrNull(v);
+  return n === null ? def : Math.min(max, Math.max(min, n));
 }
 
 // All persisted columns, in a fixed order (used for INSERT/UPSERT).
@@ -105,15 +116,16 @@ export function sanitizeVehicle(input, todayISO) {
   const make = cap(input.make, 80);
   const model = cap(input.model, 80);
   if (!make || !model) return null;
-  const year = intOrNull(input.year) || 0;
+  let year = intOrNull(input.year) || 0;
+  if (year !== 0) year = Math.min(2100, Math.max(1900, year)); // reject implausible years
   const id = slug(input.id) || slug([year, make, model, input.trim].filter(Boolean).join(" ")) || slug(`${make}-${model}`);
   const priceN = intOrNull(input.price);
   return {
     id,
     make, model, trim: cap(input.trim, 60),
     year,
-    price: priceN !== null && priceN > 0 ? priceN : null,
-    mileage: Math.max(0, intOrNull(input.mileage) || 0),
+    price: priceN !== null && priceN > 0 ? Math.min(priceN, 100000000) : null,
+    mileage: Math.min(5000000, Math.max(0, intOrNull(input.mileage) || 0)),
     bodyType: pick(input.bodyType, BODY, "Sedan"),
     fuelType: pick(input.fuelType, FUEL, "Gasoline"),
     transmission: pick(input.transmission, TRANS, "Automatic"),
@@ -121,9 +133,9 @@ export function sanitizeVehicle(input, todayISO) {
     exteriorColor: cap(input.exteriorColor, 60),
     interiorColor: cap(input.interiorColor, 60),
     engine: cap(input.engine, 120),
-    cylinders: intOrNull(input.cylinders) || 0,
-    doors: intOrNull(input.doors) || 0,
-    seats: intOrNull(input.seats) || 0,
+    cylinders: clampInt(input.cylinders, 0, 16, 0),
+    doors: clampInt(input.doors, 0, 10, 0),
+    seats: clampInt(input.seats, 0, 60, 0),
     vin: cap(input.vin, 40),
     stockNumber: cap(input.stockNumber, 60),
     condition: pick(input.condition, COND, "Used"),
@@ -132,7 +144,7 @@ export function sanitizeVehicle(input, todayISO) {
     description: cap(input.description, 8000),
     features: capArr(input.features, 60, 120),
     images: capArr(input.images, 40, 500),
-    carfaxUrl: cap(input.carfaxUrl, 500),
+    carfaxUrl: safeHttpUrl(cap(input.carfaxUrl, 500)),
     dateAdded: cap(input.dateAdded, 10) || todayISO || new Date().toISOString().slice(0, 10),
   };
 }
@@ -145,6 +157,26 @@ export async function upsert(env, v) {
     `INSERT INTO vehicles (${COLUMNS.join(", ")}, updatedAt) VALUES (${placeholders}, ?)
      ON CONFLICT(id) DO UPDATE SET ${updates}, updatedAt=excluded.updatedAt`,
   ).bind(...COLUMNS.map((c) => v[c]), new Date().toISOString()).run();
+}
+
+// Delete KV photo blobs in `candidateUrls` that NO vehicle row references any
+// more — ref-counted, so a photo a duplicate listing still uses is never
+// removed. Pass keepRowId to ignore the row you're about to write / just deleted.
+export async function deleteOrphanPhotos(env, candidateUrls, keepRowId) {
+  if (!env.PHOTOS || !env.DB) return;
+  const mine = (candidateUrls || []).filter((u) => typeof u === "string" && u.startsWith("/img/"));
+  if (!mine.length) return;
+  const others = await env.DB.prepare("SELECT id, images FROM vehicles").all();
+  const referenced = new Set();
+  for (const r of others.results || []) {
+    if (keepRowId && r.id === keepRowId) continue;
+    for (const u of safeArr(r.images)) referenced.add(u);
+  }
+  for (const u of mine) {
+    if (!referenced.has(u)) {
+      try { await env.PHOTOS.delete(u.slice("/img/".length)); } catch { /* best effort */ }
+    }
+  }
 }
 
 // Pick an id that doesn't collide (unless we're editing that same record).

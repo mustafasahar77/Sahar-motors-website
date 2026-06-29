@@ -6,7 +6,7 @@ import currentInventory from "@/data/inventory.json";
 import { OPTIONS } from "@/lib/site";
 import { slugify, formatPrice, formatMileage } from "@/lib/format";
 import {
-  apiList, apiSave, apiDelete, apiSeed, apiUpload, clearToken,
+  apiList, apiSave, apiDelete, apiSeed, apiUpload, apiDeletePhoto, clearToken,
 } from "@/lib/adminApi";
 import type { Vehicle } from "@/lib/types";
 import {
@@ -425,6 +425,9 @@ type EditorProps = {
 function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }: EditorProps) {
   const set = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
   const [uploading, setUploading] = useState(0);
+  // URLs uploaded during THIS editing session. If the admin removes one before
+  // saving, or cancels the form, we reclaim those KV blobs so they don't orphan.
+  const sessionUploaded = useRef<Set<string>>(new Set());
 
   async function handleFiles(files: File[]) {
     // Accept by MIME OR extension — iPhone HEIC files often arrive with an empty
@@ -446,6 +449,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
         const file = images[next++];
         try {
           const url = await apiUpload(file, carId);
+          sessionUploaded.current.add(url);
           setForm((f) => ({ ...f, images: [...f.images.filter(Boolean), url] }));
         } catch (e) {
           onUploadError(`Couldn't add ${file.name}: ${(e as Error).message}`);
@@ -458,7 +462,25 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
   }
 
   function removeImage(i: number) {
+    const url = form.images[i];
+    // If this photo was uploaded this session and isn't saved yet, reclaim it.
+    if (url && sessionUploaded.current.has(url)) {
+      sessionUploaded.current.delete(url);
+      void apiDeletePhoto(url);
+    }
     setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }));
+  }
+
+  // Cancelling discards the form, so reclaim any photos uploaded this session —
+  // they were never attached to a saved vehicle. (Existing photos on an edited
+  // car aren't tracked here, so they're never touched by a cancel.)
+  function handleCancel() {
+    if (sessionUploaded.current.size) {
+      const urls = [...sessionUploaded.current];
+      sessionUploaded.current.clear();
+      urls.forEach((u) => void apiDeletePhoto(u));
+    }
+    onCancel();
   }
   function moveImage(i: number, delta: number) {
     setForm((f) => {
@@ -472,7 +494,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
 
   return (
     <div className="mt-6">
-      <button type="button" onClick={onCancel} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-navy-900">
+      <button type="button" onClick={handleCancel} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-navy-900">
         <ChevronLeft size={16} /> Back to list
       </button>
 
@@ -542,7 +564,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
               </label>
             </p>
             <p className="mt-1 text-xs text-slate-500">Photos are shrunk for the web and uploaded automatically. First photo is the cover.</p>
-            {uploading > 0 && <p className="mt-2 text-sm font-medium text-brand-600">Uploading {uploading} photo{uploading === 1 ? "" : "s"}…</p>}
+            {uploading > 0 && <p role="status" aria-live="polite" className="mt-2 text-sm font-medium text-brand-600">Uploading {uploading} photo{uploading === 1 ? "" : "s"}…</p>}
           </div>
 
           {form.images.length > 0 && (
@@ -572,7 +594,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
           >
             <Check size={16} /> {busy ? "Posting…" : isNew ? "Post — Go Live" : "Save Changes"}
           </button>
-          <button type="button" onClick={onCancel} className="rounded-lg border border-slate-300 px-6 py-2.5 text-sm font-semibold text-navy-900 hover:bg-slate-50">Cancel</button>
+          <button type="button" onClick={handleCancel} className="rounded-lg border border-slate-300 px-6 py-2.5 text-sm font-semibold text-navy-900 hover:bg-slate-50">Cancel</button>
         </div>
       </div>
     </div>

@@ -37,17 +37,23 @@ export const site = {
   },
   // Google Maps query for the embedded map / "Get Directions" link.
   mapsQuery: "Sahar Motors, 5921 200A Street, Langley, BC V3A 6R2",
+  // Precise coordinates (Google Business Profile) for the map + geo structured data.
+  geo: { lat: 49.1103502, lng: -122.6676547 },
+  // Canonical Google Maps profile, used for "hasMap" in structured data.
+  mapsUrl:
+    "https://www.google.com/maps/place/Sahar+Motors/@49.1103502,-122.6676547,17z/data=!3m1!4b1!4m6!3m5!1s0x5485d706111b0d23:0x7b534aeba5357a9e!8m2!3d49.1103502!4d-122.6676547!16s%2Fg%2F11w81prv1v",
 
   // --- Hours -------------------------------------------------------------
-  // PLACEHOLDER hours — confirm the real schedule before launch (see HANDOFF.md).
+  // From the Google Business Profile (Mon–Sat 9–6, Sun 11–5). Ask Mustafa to
+  // confirm any seasonal/holiday changes.
   hours: [
     { day: "Monday", open: "9:00 AM", close: "6:00 PM" },
     { day: "Tuesday", open: "9:00 AM", close: "6:00 PM" },
     { day: "Wednesday", open: "9:00 AM", close: "6:00 PM" },
     { day: "Thursday", open: "9:00 AM", close: "6:00 PM" },
     { day: "Friday", open: "9:00 AM", close: "6:00 PM" },
-    { day: "Saturday", open: "10:00 AM", close: "5:00 PM" },
-    { day: "Sunday", open: null, close: null }, // closed
+    { day: "Saturday", open: "9:00 AM", close: "6:00 PM" },
+    { day: "Sunday", open: "11:00 AM", close: "5:00 PM" },
   ] as { day: string; open: string | null; close: string | null }[],
 
   // --- Social ------------------------------------------------------------

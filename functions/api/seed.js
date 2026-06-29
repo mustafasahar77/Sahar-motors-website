@@ -6,6 +6,7 @@ import { json, bad, checkAuth, sanitizeVehicle, upsert } from "../_lib.js";
 export async function onRequestPost({ request, env }) {
   if (!(await checkAuth(request, env))) return bad("Unauthorized", 401);
   if (!env.DB) return bad("Database not configured", 503);
+  if (Number(request.headers.get("content-length") || 0) > 8 * 1024 * 1024) return bad("Request body too large", 413);
   let body;
   try { body = await request.json(); } catch { return bad("Invalid JSON body"); }
 

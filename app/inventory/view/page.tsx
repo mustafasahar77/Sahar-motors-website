@@ -164,6 +164,14 @@ export default function VehicleViewPage() {
     setMeta("name", "twitter:image", img);
   }, [vehicle]);
 
+  // A listing that was deleted or re-slugged after the last build resolves to the
+  // "Vehicle not found" view. Mark those noindex so search engines don't treat
+  // them as thin/soft-404 pages; real vehicles stay indexable.
+  useEffect(() => {
+    if (vehicle === undefined) return; // still loading — leave default
+    setMeta("name", "robots", vehicle ? "index,follow" : "noindex,follow");
+  }, [vehicle]);
+
   if (vehicle === undefined) {
     return (
       <Container className="py-24 text-center text-slate-500">

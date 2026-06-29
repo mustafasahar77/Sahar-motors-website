@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 type RevealProps = {
   children: React.ReactNode;
@@ -8,8 +8,13 @@ type RevealProps = {
   className?: string;
 };
 
-/** Fade-in + slide-up once the element scrolls into view (respects reduced motion via CSS). */
+/** Fade-in + slide-up once the element scrolls into view. Honors the user's
+ *  "reduce motion" OS setting by rendering the content statically. */
 export default function Reveal({ children, delay = 0, className }: RevealProps) {
+  const reduceMotion = useReducedMotion();
+  if (reduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
   return (
     <motion.div
       className={className}

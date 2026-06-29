@@ -24,8 +24,12 @@ export default function VehicleImage({
   className,
   priority,
 }: VehicleImageProps) {
-  const [failed, setFailed] = useState(false);
-  const finalSrc = failed || !src ? FALLBACK : src;
+  // Track the specific src that failed (not a sticky boolean) so navigating from
+  // a broken photo to a valid one — e.g. in CarGallery, where one persistent
+  // <img> instance's src changes — correctly shows the new photo instead of
+  // latching the placeholder for the rest of the gallery.
+  const [failedSrc, setFailedSrc] = useState<string | undefined>(undefined);
+  const finalSrc = !src || failedSrc === src ? FALLBACK : src;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -35,7 +39,7 @@ export default function VehicleImage({
       loading={priority ? "eager" : "lazy"}
       decoding="async"
       onError={() => {
-        if (!failed) setFailed(true);
+        if (failedSrc !== src) setFailedSrc(src);
       }}
       className={className}
     />

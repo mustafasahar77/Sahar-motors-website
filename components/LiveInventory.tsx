@@ -38,6 +38,9 @@ export default function LiveInventory() {
     );
   }
 
-  const facets = computeFacets(vehicles.filter((v) => v.status !== "sold"));
+  // Facets are built from the FULL set (including sold) so that when a shopper
+  // turns on "Include sold", every sold car's make/body/etc. still appears as a
+  // filter option instead of silently missing.
+  const facets = computeFacets(vehicles);
   return <InventoryBrowser vehicles={vehicles} facets={facets} />;
 }

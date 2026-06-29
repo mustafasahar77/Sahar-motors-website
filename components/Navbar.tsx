@@ -128,7 +128,9 @@ export default function Navbar() {
           className="fixed inset-0 z-[60] flex flex-col bg-navy-900 text-white lg:hidden"
         >
           <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
-            <Logo />
+            <Link href="/" onClick={close} aria-label={`${site.name} home`} className="text-white">
+              <Logo />
+            </Link>
             <button
               type="button"
               aria-label="Close menu"

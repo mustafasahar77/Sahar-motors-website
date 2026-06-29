@@ -423,13 +423,22 @@ function FilterControls({
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-navy-500"
         >
           <option value="">Any mileage</option>
-          {[50000, 80000, 100000, 120000, 150000, 200000]
-            .filter((m) => !facets.mileageMax || m < facets.mileageMax + 20000)
-            .map((m) => (
+          {(() => {
+            const presets = [50000, 80000, 100000, 120000, 150000, 200000].filter(
+              (m) => !facets.mileageMax || m < facets.mileageMax + 20000,
+            );
+            // Keep the dropdown in sync with a shared/hand-edited ?maxKm= value
+            // that isn't one of the presets (otherwise it silently shows "Any").
+            if (filters.maxMileage != null && !presets.includes(filters.maxMileage)) {
+              presets.push(filters.maxMileage);
+              presets.sort((a, b) => a - b);
+            }
+            return presets.map((m) => (
               <option key={m} value={m}>
                 Under {formatNumber(m)} km
               </option>
-            ))}
+            ));
+          })()}
         </select>
       </FieldGroup>
 

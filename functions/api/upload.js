@@ -1,6 +1,6 @@
 // POST /api/upload?carId=<id>  → stores the raw image body in KV (admin only)
 // Returns { url: "/img/cars/<id>/<uuid>.<ext>" } to save into the vehicle's images[].
-import { json, bad, checkAuth } from "../_lib.js";
+import { json, bad, checkAuth, deleteOrphanPhotos } from "../_lib.js";
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB safety cap (client resizes well below this)
 
@@ -34,4 +34,16 @@ export async function onRequestPost({ request, env }) {
   const key = `cars/${carId}/${crypto.randomUUID()}.${kind.ext}`;
   await env.PHOTOS.put(key, body, { metadata: { contentType: kind.ct } });
   return json({ ok: true, url: `/img/${key}` });
+}
+
+// DELETE /api/upload?url=/img/cars/<id>/<file>  → reclaim a photo the admin
+// uploaded but then discarded before saving (Remove or Cancel). Ref-counted, so
+// it can never delete a photo a saved vehicle still references.
+export async function onRequestDelete({ request, env }) {
+  if (!(await checkAuth(request, env))) return bad("Unauthorized", 401);
+  if (!env.PHOTOS || !env.DB) return bad("Photo storage not configured", 503);
+  const u = new URL(request.url).searchParams.get("url") || "";
+  if (!u.startsWith("/img/cars/")) return bad("Invalid photo url");
+  try { await deleteOrphanPhotos(env, [u], null); } catch { /* best effort */ }
+  return json({ ok: true });
 }

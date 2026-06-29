@@ -91,7 +91,7 @@ const jsonLd = {
   description: site.description,
   url: site.url,
   email: site.email,
-  telephone: site.phones[0].value,
+  telephone: site.phones[0].href.replace("tel:", ""), // E.164, e.g. +16046522870
   image: `${site.url}/og.png`,
   address: {
     "@type": "PostalAddress",
@@ -102,6 +102,13 @@ const jsonLd = {
     addressCountry: "CA",
   },
   openingHoursSpecification,
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: site.geo.lat,
+    longitude: site.geo.lng,
+  },
+  hasMap: site.mapsUrl,
+  sameAs: [site.social.instagram],
   areaServed: "Greater Vancouver, BC",
   priceRange: "$$",
   slogan: site.tagline,

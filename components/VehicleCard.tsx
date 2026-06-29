@@ -12,7 +12,7 @@ type VehicleCardProps = {
 };
 
 const statusBadge: Record<string, { label: string; className: string }> = {
-  pending: { label: "Sale Pending", className: "bg-amber-500 text-white" },
+  pending: { label: "Sale Pending", className: "bg-amber-700 text-white" },
   sold: { label: "Sold", className: "bg-navy-900 text-white" },
 };
 
@@ -25,7 +25,10 @@ export default function VehicleCard({ vehicle, priority }: VehicleCardProps) {
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-lg">
-      <Link href={href} target="_blank" rel="noopener noreferrer" className="relative block aspect-[16/10] overflow-hidden bg-navy-100">
+      {/* Image is a plain container; the whole card is made clickable by the
+          title link's `after:absolute after:inset-0` overlay below — so there's
+          a single tab stop and no redundant/dead link over the photo. */}
+      <div className="relative block aspect-[16/10] overflow-hidden bg-navy-100">
         <VehicleImage
           src={vehicle.images[0]}
           alt={title}
@@ -52,7 +55,7 @@ export default function VehicleCard({ vehicle, priority }: VehicleCardProps) {
             <Camera size={13} /> {photoCount}
           </span>
         )}
-      </Link>
+      </div>
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">

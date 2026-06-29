@@ -143,7 +143,7 @@ function loadHeicTo(): Promise<HeicToFn> {
 /**
  * Turn any common phone/computer photo — including iPhone HEIC/HEIF, which most
  * browsers can't decode or display — into a web-friendly JPEG Blob. HEIC is
- * converted with heic2any first (loaded on demand). Every step is time-bounded so
+ * converted with heic-to (self-hosted libheif, loaded on demand). Every step is time-bounded so
  * a single bad photo can't hang the uploader. Throws a clear, user-facing message
  * when the file isn't usable, so the caller can surface it.
  */
@@ -214,4 +214,19 @@ export async function apiUpload(file: File, carId: string): Promise<string> {
   const d = (await r.json().catch(() => ({}))) as { error?: string; url?: string };
   if (!r.ok || !d.url) throw new Error(d.error || "upload failed");
   return d.url;
+}
+
+/** Best-effort cleanup of a photo the admin uploaded but discarded before saving
+ *  (Remove or Cancel). Ref-counted server-side, so it never removes a photo a
+ *  saved vehicle still references. Failures are swallowed — must not block the UI. */
+export async function apiDeletePhoto(url: string): Promise<void> {
+  if (!url) return;
+  try {
+    await fetch(`/api/upload?url=${encodeURIComponent(url)}`, {
+      method: "DELETE",
+      headers: authHeader(),
+    });
+  } catch {
+    /* best effort */
+  }
 }
