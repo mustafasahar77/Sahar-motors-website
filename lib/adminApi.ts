@@ -119,6 +119,27 @@ async function decodeBitmap(src: Blob): Promise<ImageBitmap | null> {
   }
 }
 
+// heic-to (libheif) is self-hosted at public/vendor/heic-to.js — the IIFE build with
+// the WASM inlined, loaded on demand via a <script> tag. Self-hosting sidesteps
+// Next/turbopack WASM-bundling issues; it exposes window.HeicTo.
+type HeicToFn = (args: { blob: Blob; type: string; quality?: number }) => Promise<ImageBitmap | Blob>;
+let heicToLoader: Promise<HeicToFn> | null = null;
+function loadHeicTo(): Promise<HeicToFn> {
+  const w = window as unknown as { HeicTo?: HeicToFn };
+  if (w.HeicTo) return Promise.resolve(w.HeicTo);
+  if (!heicToLoader) {
+    heicToLoader = new Promise<HeicToFn>((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "/vendor/heic-to.js";
+      s.async = true;
+      s.onload = () => (w.HeicTo ? resolve(w.HeicTo) : reject(new Error("converter unavailable")));
+      s.onerror = () => reject(new Error("failed to load the photo converter"));
+      document.head.appendChild(s);
+    });
+  }
+  return heicToLoader;
+}
+
 /**
  * Turn any common phone/computer photo — including iPhone HEIC/HEIF, which most
  * browsers can't decode or display — into a web-friendly JPEG Blob. HEIC is
@@ -133,12 +154,12 @@ export async function toUploadableJpeg(file: File, maxW = 1400, quality = 0.82):
     // iPhone HEIC/HEIF (HEVC) — decode with heic-to (libheif). Its Next.js build
     // handles the WASM bundling; "bitmap" gives us an ImageBitmap to resize directly.
     try {
-      const { heicTo } = await import("heic-to/next");
-      bitmap = await withTimeout(
+      const heicTo = await loadHeicTo();
+      bitmap = (await withTimeout(
         heicTo({ blob: file, type: "bitmap" }),
-        45000,
+        60000,
         "conversion timed out",
-      );
+      )) as ImageBitmap;
     } catch {
       throw new Error("couldn't convert this iPhone photo — in Photos, export it as JPEG (or set Camera → Formats → Most Compatible) and try again.");
     }
