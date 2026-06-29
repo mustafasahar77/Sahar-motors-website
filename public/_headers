@@ -7,6 +7,8 @@
 #    inlines its hydration scripts and font/style tags (no server nonce exists).
 #  - connect-src allows the Web3Forms contact-form endpoint.
 #  - frame-src allows the Google Maps embed on the Contact/About pages.
+#  - worker-src blob: + script-src 'wasm-unsafe-eval' blob: let the /admin photo
+#    uploader convert iPhone HEIC photos in a WASM Web Worker (heic-to).
 # Tighten further only if you remove those integrations.
 
 /*
@@ -14,4 +16,4 @@
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.web3forms.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://api.web3forms.com
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:; connect-src 'self' https://api.web3forms.com blob: data:; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://api.web3forms.com
