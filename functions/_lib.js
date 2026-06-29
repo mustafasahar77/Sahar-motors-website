@@ -16,22 +16,37 @@ export function bad(message, status = 400) {
   return json({ error: message }, status);
 }
 
-// Writes require `Authorization: Bearer <ADMIN_PASSWORD>`. Reads are public.
-// Compares fixed-length SHA-256 digests so neither the length nor the content of
-// ADMIN_PASSWORD leaks via timing. Async because it uses WebCrypto.
+async function sha256Hex(s) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+function timingEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+// Writes require `Authorization: Bearer <admin password>`. Reads are public.
+// The password's SHA-256 hash lives in the D1 `settings` table (key
+// 'admin_password_sha256'), so it survives every deploy and can be changed
+// instantly via SQL with no redeploy. Falls back to the ADMIN_PASSWORD secret
+// when the table/row isn't present. Compared as fixed-length hex digests
+// (constant-time) so neither length nor content leaks via timing.
 export async function checkAuth(request, env) {
   const got = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-  const want = env.ADMIN_PASSWORD || "";
-  if (!want) return false; // no secret configured → deny all writes
-  const enc = new TextEncoder();
-  const [a, b] = await Promise.all([
-    crypto.subtle.digest("SHA-256", enc.encode(got)),
-    crypto.subtle.digest("SHA-256", enc.encode(want)),
-  ]);
-  const av = new Uint8Array(a), bv = new Uint8Array(b);
-  let diff = 0;
-  for (let i = 0; i < av.length; i++) diff |= av[i] ^ bv[i];
-  return diff === 0;
+  if (!got) return false;
+  const gotHex = await sha256Hex(got);
+  try {
+    if (env.DB) {
+      const row = await env.DB.prepare("SELECT value FROM settings WHERE key = ?").bind("admin_password_sha256").first();
+      if (row && row.value) return timingEqual(gotHex, String(row.value));
+    }
+  } catch {
+    /* settings table not present yet — fall through to the env secret */
+  }
+  if (env.ADMIN_PASSWORD) return timingEqual(gotHex, await sha256Hex(env.ADMIN_PASSWORD));
+  return false;
 }
 
 const BODY = ["Sedan", "SUV", "Truck", "Coupe", "Hatchback", "Minivan", "Van", "Convertible", "Wagon"];

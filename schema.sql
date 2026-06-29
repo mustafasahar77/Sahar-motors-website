@@ -35,3 +35,10 @@ CREATE TABLE IF NOT EXISTS vehicles (
 
 CREATE INDEX IF NOT EXISTS idx_vehicles_status ON vehicles (status);
 CREATE INDEX IF NOT EXISTS idx_vehicles_added  ON vehicles (dateAdded);
+
+-- Key/value settings (e.g. the admin password hash). Lives in the DB so it
+-- survives every deploy and can be changed instantly with SQL (no redeploy).
+CREATE TABLE IF NOT EXISTS settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT
+);
