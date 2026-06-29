@@ -44,9 +44,9 @@ const values = [
 
 const team = [
   { name: "Mustafar Sahar", title: "Founder & CEO", image: "/team/mustafar-sahar.jpg" },
-  { name: "Mujataba Sahar", title: "Operations Director", image: "/team/mujataba-sahar.jpg" },
+  { name: "Mujtaba Sahar", title: "Operations Director", image: "/team/mujataba-sahar.jpg" },
   { name: "Samiullah Mohib", title: "Sales Manager", image: "/team/samiullah-mohib.jpg" },
-  { name: "Sijad Liwal", title: "Sales Associate", image: "/team/sijad-liwal.jpg" },
+  { name: "Sajjad Liwal", title: "Sales Associate", image: "/team/sijad-liwal.jpg" },
 ];
 
 const mapEmbed = `https://www.google.com/maps?q=${encodeURIComponent(
