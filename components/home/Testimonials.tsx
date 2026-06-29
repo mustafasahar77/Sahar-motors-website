@@ -2,28 +2,50 @@ import Container from "@/components/Container";
 import Reveal from "@/components/Reveal";
 import { Star } from "@/components/icons";
 
-// NOTE: Placeholder reviews for layout/demo purposes. Replace these with real
-// customer reviews (e.g. from Google) before launch — see HANDOFF.md checklist.
+// Real Google reviews for Sahar Motors (Google Maps — 4.9★ from 16 reviews).
+// Wording and star ratings are the customers' own; longer reviews are trimmed
+// for length without changing their meaning. Update from the Google profile as
+// new reviews come in.
+const GOOGLE_REVIEWS_URL =
+  "https://www.google.com/maps/place/Sahar+Motors/@49.1103502,-122.6676547,17z/data=!3m1!4b1!4m6!3m5!1s0x5485d706111b0d23:0x7b534aeba5357a9e!8m2!3d49.1103502!4d-122.6676547!16s%2Fg%2F11w81prv1v";
+
 const reviews = [
   {
     quote:
-      "Easy, no-pressure experience from start to finish. They were upfront about everything and I drove away in a great car at a fair price.",
-    name: "Sample Review",
-    location: "Langley, BC",
+      "I had a pleasant experience at Sahar Motors. Mustafa was easy going, patient and honest. They have great pricing and their vehicles are tested to ensure reliability. I would highly recommend Sahar Motors to anyone looking for a used vehicle.",
+    name: "Mac Houssaini",
+    meta: "Local Guide · Google",
+    rating: 5,
   },
   {
     quote:
-      "Brought my SUV in for service and they explained exactly what it needed without any upselling. Honest people — I'll be back.",
-    name: "Sample Review",
-    location: "Surrey, BC",
+      "Very good to deal with. They were honest, upfront and helpful — and refunded our deposit when some issues came up with the car we were looking at.",
+    name: "David Brodie",
+    meta: "Google review",
+    rating: 5,
   },
   {
     quote:
-      "Friendly, family-run, and genuinely helpful. They took the time to find the right vehicle for my budget. Highly recommend.",
-    name: "Sample Review",
-    location: "Abbotsford, BC",
+      "I bought a Ford Fusion, really cheap for a hybrid with 200K km, for cash. If you're looking to buy a cash car, this is the right place — better than auction in my opinion.",
+    name: "Robin Grover",
+    meta: "Local Guide · Google",
+    rating: 4,
   },
 ];
+
+function Stars({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5 text-amber-400" aria-label={`${rating} out of 5 stars`}>
+      {Array.from({ length: 5 }).map((_, s) => (
+        <Star
+          key={s}
+          size={18}
+          className={s < rating ? "fill-current" : "fill-current text-slate-200"}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function Testimonials() {
   return (
@@ -36,27 +58,48 @@ export default function Testimonials() {
           <p className="mt-2 text-slate-600">
             We&apos;re proud to be a trusted part of the Langley community.
           </p>
+          <a
+            href={GOOGLE_REVIEWS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm transition hover:shadow"
+          >
+            <span className="text-lg font-extrabold text-navy-900">4.9</span>
+            <span className="flex gap-0.5 text-amber-400" aria-hidden="true">
+              {Array.from({ length: 5 }).map((_, s) => (
+                <Star key={s} size={16} className="fill-current" />
+              ))}
+            </span>
+            <span className="text-slate-600">based on 16 Google reviews</span>
+          </a>
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
           {reviews.map((r, i) => (
             <Reveal key={i} delay={i * 0.08}>
               <figure className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex gap-0.5 text-amber-400" aria-label="5 out of 5 stars">
-                  {Array.from({ length: 5 }).map((_, s) => (
-                    <Star key={s} size={18} className="fill-current" />
-                  ))}
-                </div>
+                <Stars rating={r.rating} />
                 <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-slate-700">
                   “{r.quote}”
                 </blockquote>
                 <figcaption className="mt-5 border-t border-slate-100 pt-4 text-sm">
                   <span className="font-bold text-navy-900">{r.name}</span>
-                  <span className="block text-slate-500">{r.location}</span>
+                  <span className="block text-slate-500">{r.meta}</span>
                 </figcaption>
               </figure>
             </Reveal>
           ))}
+        </div>
+
+        <div className="mt-8 text-center">
+          <a
+            href={GOOGLE_REVIEWS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold text-blue-700 hover:text-blue-900"
+          >
+            Read all of our reviews on Google →
+          </a>
         </div>
       </Container>
     </section>
