@@ -438,16 +438,23 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
     if (images.length === 0) return;
     setUploading((u) => u + images.length);
     const carId = carIdFor(form);
-    for (const file of images) {
-      try {
-        const url = await apiUpload(file, carId);
-        setForm((f) => ({ ...f, images: [...f.images.filter(Boolean), url] }));
-      } catch (e) {
-        onUploadError(`Couldn't add ${file.name}: ${(e as Error).message}`);
-      } finally {
-        setUploading((u) => u - 1);
+    // Process a few at a time so the count moves steadily and one slow/bad photo
+    // doesn't block the rest.
+    let next = 0;
+    const worker = async () => {
+      while (next < images.length) {
+        const file = images[next++];
+        try {
+          const url = await apiUpload(file, carId);
+          setForm((f) => ({ ...f, images: [...f.images.filter(Boolean), url] }));
+        } catch (e) {
+          onUploadError(`Couldn't add ${file.name}: ${(e as Error).message}`);
+        } finally {
+          setUploading((u) => u - 1);
+        }
       }
-    }
+    };
+    await Promise.all(Array.from({ length: Math.min(3, images.length) }, worker));
   }
 
   function removeImage(i: number) {

@@ -99,9 +99,21 @@ const HEIC_RE = /^image\/(heic|heif)$/i;
 function isHeic(file: File): boolean {
   return HEIC_RE.test(file.type) || /\.(heic|heif)$/i.test(file.name);
 }
+// Reject if a step (image decode / HEIC convert / upload) doesn't settle in time,
+// so one bad photo can never freeze the whole uploader.
+function withTimeout<T>(p: Promise<T>, ms: number, msg = "timed out"): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(msg)), ms);
+    p.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); },
+    );
+  });
+}
+
 async function decodeBitmap(src: Blob): Promise<ImageBitmap | null> {
   try {
-    return await createImageBitmap(src);
+    return await withTimeout(createImageBitmap(src), 20000, "decode timed out");
   } catch {
     return null;
   }
@@ -110,9 +122,9 @@ async function decodeBitmap(src: Blob): Promise<ImageBitmap | null> {
 /**
  * Turn any common phone/computer photo — including iPhone HEIC/HEIF, which most
  * browsers can't decode or display — into a web-friendly JPEG Blob. HEIC is
- * converted with heic2any first (loaded on demand). Throws a clear, user-facing
- * message when the file isn't a usable image, so the caller can surface it
- * instead of silently failing.
+ * converted with heic2any first (loaded on demand). Every step is time-bounded so
+ * a single bad photo can't hang the uploader. Throws a clear, user-facing message
+ * when the file isn't usable, so the caller can surface it.
  */
 export async function toUploadableJpeg(file: File, maxW = 1400, quality = 0.82): Promise<Blob> {
   let bitmap = await decodeBitmap(file);
@@ -121,10 +133,14 @@ export async function toUploadableJpeg(file: File, maxW = 1400, quality = 0.82):
     let jpeg: Blob;
     try {
       const heic2any = (await import("heic2any")).default;
-      const out = await heic2any({ blob: file, toType: "image/jpeg", quality });
+      const out = await withTimeout(
+        heic2any({ blob: file, toType: "image/jpeg", quality }),
+        45000,
+        "conversion timed out",
+      );
       jpeg = Array.isArray(out) ? out[0] : out;
     } catch {
-      throw new Error("couldn't convert this iPhone photo — in Photos, export it as JPEG and try again.");
+      throw new Error("couldn't convert this iPhone photo — in Photos, export it as JPEG (or set Camera → Formats → Most Compatible) and try again.");
     }
     bitmap = await decodeBitmap(jpeg);
     if (!bitmap) return jpeg; // converted but can't re-decode to resize — upload as-is
@@ -157,11 +173,25 @@ export async function toUploadableJpeg(file: File, maxW = 1400, quality = 0.82):
 /** Convert + resize a photo to JPEG, upload it, return the public URL for images[]. */
 export async function apiUpload(file: File, carId: string): Promise<string> {
   const blob = await toUploadableJpeg(file);
-  const r = await fetch(`/api/upload?carId=${encodeURIComponent(carId || "misc")}`, {
-    method: "POST",
-    headers: { ...authHeader(), "content-type": "image/jpeg" },
-    body: blob,
-  });
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 60000);
+  let r: Response;
+  try {
+    r = await fetch(`/api/upload?carId=${encodeURIComponent(carId || "misc")}`, {
+      method: "POST",
+      headers: { ...authHeader(), "content-type": "image/jpeg" },
+      body: blob,
+      signal: ctrl.signal,
+    });
+  } catch (e) {
+    throw new Error(
+      (e as Error).name === "AbortError"
+        ? "upload timed out — check your connection and try again."
+        : "upload failed — check your connection.",
+    );
+  } finally {
+    clearTimeout(timer);
+  }
   const d = (await r.json().catch(() => ({}))) as { error?: string; url?: string };
   if (!r.ok || !d.url) throw new Error(d.error || "upload failed");
   return d.url;
