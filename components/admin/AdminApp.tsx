@@ -6,7 +6,7 @@ import currentInventory from "@/data/inventory.json";
 import { OPTIONS } from "@/lib/site";
 import { slugify, formatPrice, formatMileage } from "@/lib/format";
 import {
-  apiList, apiSave, apiDelete, apiSeed, apiUpload, apiDeletePhoto, clearToken,
+  apiList, apiSave, apiDelete, apiSeed, apiUpload, apiDeletePhoto, apiReorder, clearToken,
 } from "@/lib/adminApi";
 import type { Vehicle } from "@/lib/types";
 import {
@@ -119,6 +119,8 @@ export default function AdminApp() {
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const toastTimer = useRef<number | null>(null);
+  const reorderTimer = useRef<number | null>(null);
+  const pendingOrder = useRef<string[] | null>(null);
 
   async function load() {
     try {
@@ -137,6 +139,10 @@ export default function AdminApp() {
     load();
     return () => {
       if (toastTimer.current) window.clearTimeout(toastTimer.current);
+      if (reorderTimer.current) {
+        window.clearTimeout(reorderTimer.current);
+        if (pendingOrder.current) apiReorder(pendingOrder.current).catch(() => {});
+      }
     };
   }, []);
 
@@ -146,11 +152,33 @@ export default function AdminApp() {
     toastTimer.current = window.setTimeout(() => setToast(null), 4000);
   }
 
-  const sorted = useMemo(
-    () => [...cars].sort((a, b) => (b.dateAdded || "").localeCompare(a.dateAdded || "")),
+  const ordered = useMemo(
+    () => [...cars].sort((a, b) => a.sortOrder - b.sortOrder || (b.dateAdded || "").localeCompare(a.dateAdded || "")),
     [cars],
   );
   const availableCount = cars.filter((c) => c.status === "available").length;
+
+  // Persist the manual order, debounced so rapid up/down clicks send one request.
+  function persistOrder(ids: string[]) {
+    pendingOrder.current = ids;
+    if (reorderTimer.current) window.clearTimeout(reorderTimer.current);
+    reorderTimer.current = window.setTimeout(() => {
+      reorderTimer.current = null;
+      const p = pendingOrder.current;
+      pendingOrder.current = null;
+      if (p) apiReorder(p).catch(() => flash("err", "Couldn't save the new order — please try again."));
+    }, 500);
+  }
+  // Swap a car with its neighbour (optimistic) and persist the whole sequence.
+  function moveCar(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= ordered.length) return;
+    const arr = [...ordered];
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    const reindexed = arr.map((c, idx) => ({ ...c, sortOrder: idx }));
+    setCars(reindexed);
+    persistOrder(reindexed.map((c) => c.id));
+  }
 
   function startAdd() {
     const f = emptyForm();
@@ -329,6 +357,11 @@ export default function AdminApp() {
           <p className="mt-4 text-sm text-slate-500">
             {cars.length} {cars.length === 1 ? "vehicle" : "vehicles"} · {availableCount} available
           </p>
+          {cars.length > 1 && (
+            <p className="mt-1 text-xs text-slate-500">
+              Use the <span className="font-semibold">▲ ▼</span> arrows to set the order vehicles appear on your website — top of the list shows first.
+            </p>
+          )}
 
           <div className="mt-3 space-y-2">
             {cars.length === 0 && !loadError && (
@@ -340,13 +373,33 @@ export default function AdminApp() {
                 </p>
               </div>
             )}
-            {sorted.map((c) => {
+            {ordered.map((c, i) => {
               const title = [c.year, c.make, c.model, c.trim].filter(Boolean).join(" ");
               return (
                 <div
                   key={c.id}
                   className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
                 >
+                  <div className="flex shrink-0 flex-col">
+                    <button
+                      type="button"
+                      aria-label={`Move ${title} up`}
+                      disabled={i === 0 || busy}
+                      onClick={() => moveCar(i, -1)}
+                      className="flex h-6 w-7 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:opacity-25"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Move ${title} down`}
+                      disabled={i === ordered.length - 1 || busy}
+                      onClick={() => moveCar(i, 1)}
+                      className="flex h-6 w-7 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:opacity-25"
+                    >
+                      ▼
+                    </button>
+                  </div>
                   <div className="h-12 w-16 shrink-0 overflow-hidden rounded border border-slate-200 bg-slate-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img

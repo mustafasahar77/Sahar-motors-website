@@ -24,11 +24,15 @@ export async function onRequestPost({ request, env }) {
   // in place (never fork). On create, ensure the derived id is unique.
   if (body.originalId) {
     const orig = String(body.originalId);
-    const exists = await env.DB.prepare("SELECT id FROM vehicles WHERE id = ?").bind(orig).first();
+    const exists = await env.DB.prepare("SELECT id, sortOrder FROM vehicles WHERE id = ?").bind(orig).first();
     if (!exists) return bad("The vehicle you're editing no longer exists.", 404);
     v.id = orig;
+    v.sortOrder = exists.sortOrder || 0; // keep the manual display order across edits
   } else {
     v.id = await uniqueId(env, v.id);
+    // New cars land at the top of the list; the admin can nudge them down.
+    const top = await env.DB.prepare("SELECT MIN(sortOrder) AS m FROM vehicles").first();
+    v.sortOrder = (top && top.m !== null && top.m !== undefined ? top.m : 1) - 1;
   }
 
   // Diff the existing row's photos against the incoming set so any photo removed

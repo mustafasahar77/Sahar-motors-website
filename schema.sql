@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
   condition     TEXT DEFAULT 'Used',
   status        TEXT NOT NULL DEFAULT 'available',  -- available | pending | sold
   featured      INTEGER NOT NULL DEFAULT 0,         -- 0/1
+  sortOrder     INTEGER NOT NULL DEFAULT 0,         -- manual display order (0 = shown first)
   description   TEXT,
   features      TEXT,               -- JSON array, e.g. ["Sunroof","Bluetooth"]
   images        TEXT,               -- JSON array of URLs, e.g. ["/img/cars/.../x.jpg"]
@@ -35,6 +36,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
 
 CREATE INDEX IF NOT EXISTS idx_vehicles_status ON vehicles (status);
 CREATE INDEX IF NOT EXISTS idx_vehicles_added  ON vehicles (dateAdded);
+CREATE INDEX IF NOT EXISTS idx_vehicles_order  ON vehicles (sortOrder);
 
 -- Key/value settings (e.g. the admin password hash). Lives in the DB so it
 -- survives every deploy and can be changed instantly with SQL (no redeploy).

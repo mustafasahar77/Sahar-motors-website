@@ -9,14 +9,14 @@ import { apiList } from "@/lib/adminApi";
 import type { Vehicle } from "@/lib/types";
 import { ArrowRight } from "@/components/icons";
 
-// Mirror lib/inventory getFeaturedVehicles: flagged-available first, then newest
-// available, capped at `limit`.
+// Mirror lib/inventory getFeaturedVehicles: flagged-available first, then the
+// rest, each in the dealer's manual display order (sortOrder), capped at `limit`.
 function pickFeatured(all: Vehicle[], limit = 6): Vehicle[] {
+  const byOrder = (a: Vehicle, b: Vehicle) =>
+    (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (b.dateAdded || "").localeCompare(a.dateAdded || "");
   const available = all.filter((v) => v.status !== "sold");
-  const flagged = available.filter((v) => v.featured);
-  const rest = available
-    .filter((v) => !v.featured)
-    .sort((a, b) => (b.dateAdded || "").localeCompare(a.dateAdded || ""));
+  const flagged = available.filter((v) => v.featured).sort(byOrder);
+  const rest = available.filter((v) => !v.featured).sort(byOrder);
   return [...flagged, ...rest].slice(0, limit);
 }
 

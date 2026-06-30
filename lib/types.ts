@@ -54,6 +54,8 @@ export interface Vehicle {
   condition: Condition;
   status: VehicleStatus;
   featured: boolean;
+  /** Manual display order set in the admin (ascending; 0 = shown first). */
+  sortOrder: number;
   description: string;
   features: string[];
   /** Public paths to photos, e.g. "/inventory/2019-honda-civic-1.jpg". */
@@ -65,6 +67,7 @@ export interface Vehicle {
 }
 
 export type SortKey =
+  | "curated"
   | "newest"
   | "price-asc"
   | "price-desc"

@@ -16,6 +16,7 @@ const TRANS_SET = new Set<string>(OPTIONS.transmission);
 const DRIVE_SET = new Set<string>(OPTIONS.drivetrain);
 
 export const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "curated", label: "Recommended" },
   { value: "newest", label: "Newest Arrivals" },
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
@@ -40,7 +41,7 @@ export function defaultFilterState(): FilterState {
     maxYear: null,
     maxMileage: null,
     includeSold: false,
-    sort: "newest",
+    sort: "curated",
   };
 }
 
@@ -182,8 +183,12 @@ export function sortVehicles(vehicles: Vehicle[], sort: SortKey): Vehicle[] {
       out.sort((a, b) => a.mileage - b.mileage);
       break;
     case "newest":
-    default:
       out.sort((a, b) => b.dateAdded.localeCompare(a.dateAdded));
+      break;
+    case "curated":
+    default:
+      // The dealer's manual order (set via up/down in the admin); newest breaks ties.
+      out.sort((a, b) => a.sortOrder - b.sortOrder || b.dateAdded.localeCompare(a.dateAdded));
       break;
   }
   return out;
@@ -256,7 +261,7 @@ export function filtersToParams(s: FilterState): URLSearchParams {
   if (s.maxYear !== null) p.set("maxYear", String(s.maxYear));
   if (s.maxMileage !== null) p.set("maxKm", String(s.maxMileage));
   if (s.includeSold) p.set("sold", "1");
-  if (s.sort !== "newest") p.set("sort", s.sort);
+  if (s.sort !== "curated") p.set("sort", s.sort);
   return p;
 }
 
@@ -300,6 +305,6 @@ export function filtersFromParams(
     maxYear: intParam(params.get("maxYear")),
     maxMileage: intParam(params.get("maxKm")),
     includeSold: params.get("sold") === "1",
-    sort: sortRaw && SORT_KEYS.has(sortRaw) ? (sortRaw as SortKey) : "newest",
+    sort: sortRaw && SORT_KEYS.has(sortRaw) ? (sortRaw as SortKey) : "curated",
   };
 }

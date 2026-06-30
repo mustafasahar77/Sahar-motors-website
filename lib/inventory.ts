@@ -115,6 +115,7 @@ function normalizeOne(raw: unknown): Vehicle | null {
     condition: enumValue<Condition>(r.condition, CONDITIONS, "Used"),
     status: enumValue<VehicleStatus>(r.status, STATUSES, "available"),
     featured: r.featured === true,
+    sortOrder: num(r.sortOrder, 0),
     description: str(r.description),
     features: strArray(r.features),
     images: strArray(r.images),
@@ -165,15 +166,16 @@ export function getAllSlugs(): string[] {
 }
 
 /**
- * Featured vehicles for the homepage. Prefers flagged + available cars and
- * tops up with the newest available cars so the section is never empty.
+ * Featured vehicles for the homepage. Flagged cars first, then the rest, each
+ * group in the dealer's manual display order (sortOrder), so the section is
+ * never empty and reflects the sequence set in the admin.
  */
 export function getFeaturedVehicles(limit = 6): Vehicle[] {
+  const byOrder = (a: Vehicle, b: Vehicle) =>
+    a.sortOrder - b.sortOrder || b.dateAdded.localeCompare(a.dateAdded);
   const available = getAvailableVehicles();
-  const flagged = available.filter((v) => v.featured);
-  const rest = available
-    .filter((v) => !v.featured)
-    .sort((a, b) => b.dateAdded.localeCompare(a.dateAdded));
+  const flagged = available.filter((v) => v.featured).sort(byOrder);
+  const rest = available.filter((v) => !v.featured).sort(byOrder);
   return [...flagged, ...rest].slice(0, limit);
 }
 

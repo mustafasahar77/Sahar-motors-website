@@ -84,6 +84,20 @@ export async function apiDelete(id: string): Promise<void> {
   }
 }
 
+/** Persist the manual display order — `orderedIds` is the full list of vehicle
+ *  ids in the sequence they should appear (first = shown first). */
+export async function apiReorder(orderedIds: string[]): Promise<void> {
+  const r = await fetch("/api/reorder", {
+    method: "POST",
+    headers: { ...authHeader(), "content-type": "application/json" },
+    body: JSON.stringify({ order: orderedIds }),
+  });
+  if (!r.ok) {
+    const d = (await r.json().catch(() => ({}))) as { error?: string };
+    throw new Error(d.error || "Reorder failed");
+  }
+}
+
 export async function apiSeed(vehicles: unknown[]): Promise<{ seeded: number; skipped: number }> {
   const r = await fetch("/api/seed", {
     method: "POST",

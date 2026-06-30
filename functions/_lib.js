@@ -79,7 +79,7 @@ function clampInt(v, min, max, def = 0) {
 export const COLUMNS = [
   "id", "make", "model", "trim", "year", "price", "mileage", "bodyType", "fuelType",
   "transmission", "drivetrain", "exteriorColor", "interiorColor", "engine", "cylinders",
-  "doors", "seats", "vin", "stockNumber", "condition", "status", "featured",
+  "doors", "seats", "vin", "stockNumber", "condition", "status", "featured", "sortOrder",
   "description", "features", "images", "carfaxUrl", "dateAdded",
 ];
 
@@ -97,6 +97,7 @@ export function rowToVehicle(r) {
     vin: r.vin || "", stockNumber: r.stockNumber || "",
     condition: r.condition || "Used", status: r.status || "available",
     featured: !!r.featured,
+    sortOrder: r.sortOrder || 0,
     description: r.description || "",
     features: safeArr(r.features), images: safeArr(r.images),
     carfaxUrl: r.carfaxUrl || "", dateAdded: r.dateAdded || "",
@@ -141,6 +142,7 @@ export function sanitizeVehicle(input, todayISO) {
     condition: pick(input.condition, COND, "Used"),
     status: pick(input.status, STAT, "available"),
     featured: input.featured === true || input.featured === 1 || input.featured === "true" ? 1 : 0,
+    sortOrder: intOrNull(input.sortOrder) || 0, // overridden in the POST handler (new = top, edit = preserved)
     description: cap(input.description, 8000),
     features: capArr(input.features, 60, 120),
     images: capArr(input.images, 40, 500),
