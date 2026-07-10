@@ -10,7 +10,7 @@ import {
 } from "@/lib/adminApi";
 import type { Vehicle } from "@/lib/types";
 import {
-  Plus, Trash, Download, Upload, Check, ChevronLeft, Car,
+  Plus, Trash, Download, Upload, Check, ChevronLeft, ChevronRight, Car, Star,
 } from "@/components/icons";
 
 type Json = Record<string, unknown>;
@@ -478,9 +478,23 @@ type EditorProps = {
 function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }: EditorProps) {
   const set = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
   const [uploading, setUploading] = useState(0);
+  // Index of the photo being dragged to a new position (null = no drag).
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
   // URLs uploaded during THIS editing session. If the admin removes one before
   // saving, or cancels the form, we reclaim those KV blobs so they don't orphan.
   const sessionUploaded = useRef<Set<string>>(new Set());
+
+  // If a photo is dropped outside the upload box, the browser's default is to
+  // NAVIGATE to the file — wiping the half-filled form. Neutralize that.
+  useEffect(() => {
+    const prevent = (e: DragEvent) => e.preventDefault();
+    window.addEventListener("dragover", prevent);
+    window.addEventListener("drop", prevent);
+    return () => {
+      window.removeEventListener("dragover", prevent);
+      window.removeEventListener("drop", prevent);
+    };
+  }, []);
 
   async function handleFiles(files: File[]) {
     // Accept by MIME OR extension — iPhone HEIC files often arrive with an empty
@@ -494,16 +508,42 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
     if (images.length === 0) return;
     setUploading((u) => u + images.length);
     const carId = carIdFor(form);
-    // Process a few at a time so the count moves steadily and one slow/bad photo
-    // doesn't block the rest.
+    // Uploads run a few at a time and finish out of order (small photos beat big
+    // HEICs), so each finished photo is INSERTED next to its batch neighbours
+    // rather than appended — the grid always matches the order the photos were
+    // picked, which is the sequence the dealer expects to fine-tune from.
+    const slots: (string | null)[] = new Array(images.length).fill(null);
+    const insertInOrder = (idx: number, url: string) =>
+      setForm((f) => {
+        const imgs = f.images.filter(Boolean);
+        let at = -1;
+        for (let k = idx - 1; k >= 0 && at === -1; k--) {
+          const u = slots[k];
+          if (u) at = imgs.indexOf(u); // right after the nearest earlier sibling
+        }
+        if (at !== -1) {
+          imgs.splice(at + 1, 0, url);
+        } else {
+          let before = -1;
+          for (let k = idx + 1; k < slots.length && before === -1; k++) {
+            const u = slots[k];
+            if (u) before = imgs.indexOf(u); // just before the nearest later sibling
+          }
+          if (before !== -1) imgs.splice(before, 0, url);
+          else imgs.push(url);
+        }
+        return { ...f, images: imgs };
+      });
     let next = 0;
     const worker = async () => {
       while (next < images.length) {
-        const file = images[next++];
+        const idx = next++;
+        const file = images[idx];
         try {
           const url = await apiUpload(file, carId);
           sessionUploaded.current.add(url);
-          setForm((f) => ({ ...f, images: [...f.images.filter(Boolean), url] }));
+          slots[idx] = url;
+          insertInOrder(idx, url);
         } catch (e) {
           onUploadError(`Couldn't add ${file.name}: ${(e as Error).message}`);
         } finally {
@@ -543,6 +583,19 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
       [next[i], next[t]] = [next[t], next[i]];
       return { ...f, images: next };
     });
+  }
+  // Drag-and-drop: pull the photo out and drop it at the target position.
+  function moveImageTo(from: number, to: number) {
+    setForm((f) => {
+      if (from === to || from < 0 || to < 0 || from >= f.images.length || to >= f.images.length) return f;
+      const next = [...f.images];
+      const [picked] = next.splice(from, 1);
+      next.splice(to, 0, picked);
+      return { ...f, images: next };
+    });
+  }
+  function makeCover(i: number) {
+    moveImageTo(i, 0);
   }
 
   return (
@@ -621,20 +674,48 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
           </div>
 
           {form.images.length > 0 && (
-            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {form.images.map((img, i) => (
-                <div key={`${img}-${i}`} className="group relative overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt="" className="aspect-[4/3] w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/inventory/placeholder-navy.svg"; }} />
-                  {i === 0 && <span className="absolute left-1 top-1 rounded bg-brand-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">Cover</span>}
-                  <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/45 px-1 py-0.5 opacity-0 transition group-hover:opacity-100">
-                    <button type="button" aria-label="Move left" onClick={() => moveImage(i, -1)} className="px-1 text-white disabled:opacity-30" disabled={i === 0}>◀</button>
-                    <button type="button" aria-label="Remove photo" onClick={() => removeImage(i)} className="px-1 text-white"><Trash size={13} /></button>
-                    <button type="button" aria-label="Move right" onClick={() => moveImage(i, 1)} className="px-1 text-white disabled:opacity-30" disabled={i === form.images.length - 1}>▶</button>
+            <>
+              <p className="mt-3 text-xs text-slate-500">
+                The photos appear on your website in this order — <strong>drag a photo</strong> to move it,
+                use the arrows, or tap <Star size={12} className="inline text-amber-500" aria-hidden /> to make it the cover.
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                {form.images.map((img, i) => (
+                  <div
+                    key={`${img}-${i}`}
+                    draggable
+                    onDragStart={(e) => { setDragIdx(i); e.dataTransfer.effectAllowed = "move"; }}
+                    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
+                    onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) moveImageTo(dragIdx, i); setDragIdx(null); }}
+                    onDragEnd={() => setDragIdx(null)}
+                    className={`overflow-hidden rounded-lg border bg-white shadow-sm ${
+                      dragIdx === i ? "border-brand-500 opacity-60 ring-2 ring-brand-300" : "border-slate-200"
+                    }`}
+                  >
+                    <div className="relative cursor-grab active:cursor-grabbing">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt={`Photo ${i + 1}`} className="aspect-[4/3] w-full select-none object-cover" draggable={false} onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/inventory/placeholder-navy.svg"; }} />
+                      {i === 0 && <span className="absolute left-1.5 top-1.5 rounded bg-brand-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow">Cover</span>}
+                      <span className="absolute right-1.5 top-1.5 rounded bg-black/50 px-1.5 py-0.5 text-[11px] font-semibold text-white">{i + 1}</span>
+                    </div>
+                    <div className="flex items-stretch justify-between border-t border-slate-200">
+                      <button type="button" aria-label={`Move photo ${i + 1} earlier`} onClick={() => moveImage(i, -1)} disabled={i === 0} className="flex h-9 flex-1 items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-25">
+                        <ChevronLeft size={17} />
+                      </button>
+                      <button type="button" aria-label={`Make photo ${i + 1} the cover`} onClick={() => makeCover(i)} disabled={i === 0} className="flex h-9 flex-1 items-center justify-center border-l border-slate-100 text-amber-500 hover:bg-amber-50 disabled:opacity-25">
+                        <Star size={16} className={i === 0 ? "fill-current" : ""} />
+                      </button>
+                      <button type="button" aria-label={`Remove photo ${i + 1}`} onClick={() => removeImage(i)} className="flex h-9 flex-1 items-center justify-center border-l border-slate-100 text-red-500 hover:bg-red-50">
+                        <Trash size={15} />
+                      </button>
+                      <button type="button" aria-label={`Move photo ${i + 1} later`} onClick={() => moveImage(i, 1)} disabled={i === form.images.length - 1} className="flex h-9 flex-1 items-center justify-center border-l border-slate-100 text-slate-600 hover:bg-slate-50 disabled:opacity-25">
+                        <ChevronRight size={17} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
