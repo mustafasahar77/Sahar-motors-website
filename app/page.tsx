@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     description: `Quality used cars and trusted in-house service in ${site.address.city}, ${site.address.province}. Browse the Sahar Motors inventory.`,
   },
+  alternates: { canonical: "/" },
 };
 
 export default function Home() {

@@ -8,15 +8,23 @@ import ContactForm from "@/components/ContactForm";
 import VehicleCard from "@/components/VehicleCard";
 import { formatMileage, formatPrice, vehicleTitle } from "@/lib/format";
 import { site } from "@/lib/site";
+import { safeJsonLd } from "@/lib/jsonld";
 import { apiGet, apiList } from "@/lib/adminApi";
 import { getAllVehicles } from "@/lib/inventory";
 import type { Vehicle } from "@/lib/types";
 import {
   Phone, MapPin, Check, Calendar, Gauge, Cog, Car, Fuel,
   ChevronRight, ExternalLink, ShieldCheck, ArrowRight,
+  Share2, MessageSquare, Star,
 } from "@/components/icons";
 
 const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.mapsQuery)}`;
+
+// Texting goes to the mobile line when one is listed (texting a landline goes
+// nowhere); "?&body=" prefills the message on both iOS and Android.
+const textPhone = site.phones[1] ?? site.phones[0];
+const smsHref = (message: string) =>
+  `sms:${textPhone.href.replace("tel:", "")}?&body=${encodeURIComponent(message)}`;
 
 const statusNotice: Record<string, { label: string; className: string } | undefined> = {
   pending: {
@@ -104,6 +112,7 @@ export default function VehicleViewPage() {
   const [urlRead, setUrlRead] = useState(false);
   const [vehicle, setVehicle] = useState<Vehicle | null | undefined>(undefined);
   const [pool, setPool] = useState<Vehicle[]>([]);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     // Read the ?id= after mount (window is undefined during static prerender);
@@ -162,6 +171,53 @@ export default function VehicleViewPage() {
     setMeta("property", "og:url", url);
     setMeta("name", "twitter:card", "summary_large_image");
     setMeta("name", "twitter:image", img);
+
+    // schema.org Car + Offer — the structured data Google uses for used-vehicle
+    // listings. Googlebot renders JS, so client injection is indexed. Price is
+    // only claimed when one is set; sold/pending map to availability honestly.
+    const jsonLd: Record<string, unknown> = {
+      "@context": "https://schema.org",
+      "@type": "Car",
+      name: vehicleTitle(vehicle),
+      brand: { "@type": "Brand", name: vehicle.make },
+      model: vehicle.model,
+      ...(vehicle.year ? { vehicleModelDate: String(vehicle.year) } : {}),
+      ...(vehicle.trim ? { vehicleConfiguration: vehicle.trim } : {}),
+      bodyType: vehicle.bodyType,
+      fuelType: vehicle.fuelType,
+      vehicleTransmission: vehicle.transmission,
+      driveWheelConfiguration: vehicle.drivetrain,
+      ...(vehicle.exteriorColor && vehicle.exteriorColor !== "—" ? { color: vehicle.exteriorColor } : {}),
+      ...(vehicle.mileage > 0
+        ? { mileageFromOdometer: { "@type": "QuantitativeValue", value: vehicle.mileage, unitCode: "KMT" } }
+        : {}),
+      ...(vehicle.vin ? { vehicleIdentificationNumber: vehicle.vin } : {}),
+      itemCondition: "https://schema.org/UsedCondition",
+      image: vehicle.images.slice(0, 5).map((u) => (u.startsWith("http") ? u : `${site.url}${u}`)),
+      description: desc,
+      offers: {
+        "@type": "Offer",
+        url,
+        priceCurrency: "CAD",
+        ...(vehicle.price !== null ? { price: vehicle.price } : {}),
+        availability:
+          vehicle.status === "available"
+            ? "https://schema.org/InStock"
+            : vehicle.status === "sold"
+              ? "https://schema.org/SoldOut"
+              : "https://schema.org/LimitedAvailability",
+        itemCondition: "https://schema.org/UsedCondition",
+        seller: { "@type": "AutoDealer", name: site.name, telephone: site.phones[0].href.replace("tel:", "") },
+      },
+    };
+    let script = document.getElementById("vehicle-jsonld") as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = "vehicle-jsonld";
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+    }
+    script.textContent = safeJsonLd(jsonLd);
   }, [vehicle]);
 
   // A listing that was deleted or re-slugged after the last build resolves to the
@@ -207,9 +263,29 @@ export default function VehicleViewPage() {
   const inquiryMessage = `Hi, I'm interested in the ${title}${
     vehicle.stockNumber ? ` (Stock #${vehicle.stockNumber})` : ""
   }. Is it still available? Please get in touch with more details.`;
+  const textMessage = `Hi, I'm interested in the ${title} at ${site.name}. Is it still available?`;
+
+  async function share() {
+    const url = window.location.href;
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: `${title} | ${site.name}`, url });
+      } catch {
+        /* user closed the share sheet */
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
 
   return (
-    <div className="bg-slate-50">
+    <div className="bg-slate-50 pb-16 lg:pb-0">
       <Container className="py-6 sm:py-8">
         <nav aria-label="Breadcrumb" className="mb-4">
           <ol className="flex flex-wrap items-center gap-1 text-sm text-slate-500">
@@ -269,14 +345,24 @@ export default function VehicleViewPage() {
                 >
                   Ask About This Vehicle <ArrowRight size={16} />
                 </a>
-                <a
-                  href={mapsHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-navy-700 hover:text-brand-600"
-                >
-                  <MapPin size={16} /> Get Directions
-                </a>
+                <div className="flex items-center justify-center gap-1">
+                  <a
+                    href={mapsHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-navy-700 hover:text-brand-600"
+                  >
+                    <MapPin size={16} /> Get Directions
+                  </a>
+                  <span aria-hidden className="text-slate-300">·</span>
+                  <button
+                    type="button"
+                    onClick={share}
+                    className="flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-navy-700 hover:text-brand-600"
+                  >
+                    <Share2 size={15} /> {copied ? "Link copied!" : "Share"}
+                  </button>
+                </div>
               </div>
 
               {vehicle.carfaxUrl && (
@@ -297,6 +383,20 @@ export default function VehicleViewPage() {
             >
               <h2 className="text-lg font-bold text-navy-900">Ask About This Vehicle</h2>
               <p className="mt-1 text-sm text-slate-600">Send us a message and we&apos;ll get right back to you.</p>
+              {site.googleReviews.url && (
+                <a
+                  href={site.googleReviews.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-navy-900"
+                >
+                  <Star size={13} className="fill-current text-amber-400" />
+                  <span>
+                    <strong className="text-navy-900">{site.googleReviews.rating}</strong> rating from{" "}
+                    {site.googleReviews.count} Google reviews
+                  </span>
+                </a>
+              )}
               <div className="mt-4">
                 <ContactForm
                   subject={`Vehicle Inquiry: ${title}${vehicle.stockNumber ? ` (Stock #${vehicle.stockNumber})` : ""}`}
@@ -368,6 +468,30 @@ export default function VehicleViewPage() {
           </section>
         )}
       </Container>
+
+      {/* Sticky mobile action bar — the Call/Text/Ask buttons stay reachable
+          while the shopper scrolls specs and photos. Hidden on desktop, where
+          the sidebar card is always visible. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-slate-200 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
+        <a
+          href={site.phones[0].href}
+          className="flex items-center justify-center gap-1.5 py-3.5 text-sm font-semibold text-navy-900 active:bg-slate-50"
+        >
+          <Phone size={17} className="text-brand-500" /> Call
+        </a>
+        <a
+          href={smsHref(textMessage)}
+          className="flex items-center justify-center gap-1.5 border-x border-slate-200 py-3.5 text-sm font-semibold text-navy-900 active:bg-slate-50"
+        >
+          <MessageSquare size={17} className="text-brand-500" /> Text
+        </a>
+        <a
+          href="#inquire"
+          className="flex items-center justify-center gap-1.5 py-3.5 text-sm font-semibold text-navy-900 active:bg-slate-50"
+        >
+          <ArrowRight size={17} className="text-brand-500" /> Ask
+        </a>
+      </div>
     </div>
   );
 }

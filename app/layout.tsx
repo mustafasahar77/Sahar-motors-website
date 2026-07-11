@@ -52,7 +52,11 @@ export const metadata: Metadata = {
     description: site.description,
     images: ["/og.png"],
   },
-  alternates: { canonical: "/" },
+  // NOTE: no site-wide alternates.canonical here — routes without their own
+  // canonical (the client-rendered /inventory/view/ vehicle pages) would inherit
+  // it and ship <link rel=canonical href=homepage> in their prerendered HTML,
+  // inviting Google to fold every car page into the homepage. Each page sets
+  // its own canonical; the homepage's lives in app/page.tsx.
   robots: { index: true, follow: true },
 };
 

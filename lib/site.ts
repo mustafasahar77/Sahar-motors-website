@@ -62,6 +62,16 @@ export const site = {
     instagram: "https://www.instagram.com/saharmotors"
   },
 
+  // Google Business Profile rating, shown on the homepage and vehicle pages.
+  // Displayed as content only (NOT marked up as AggregateRating — self-serving
+  // third-party review markup is against Google's guidelines). Update as the
+  // profile grows; set url to "" to hide the badges.
+  googleReviews: {
+    url: "https://www.google.com/maps/place/Sahar+Motors/@49.1103502,-122.6676547,17z/data=!3m1!4b1!4m6!3m5!1s0x5485d706111b0d23:0x7b534aeba5357a9e!8m2!3d49.1103502!4d-122.6676547!16s%2Fg%2F11w81prv1v",
+    rating: "4.9",
+    count: 16,
+  },
+
   // --- Integrations ------------------------------------------------------
   // Free Web3Forms backends. These are PUBLIC access keys (safe to ship in
   // client code) created at https://web3forms.com with the dealership inbox.

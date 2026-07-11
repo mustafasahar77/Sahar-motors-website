@@ -118,6 +118,8 @@ export default function AdminApp() {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "pending" | "sold" | "featured">("all");
   const toastTimer = useRef<number | null>(null);
   const reorderTimer = useRef<number | null>(null);
   const pendingOrder = useRef<string[] | null>(null);
@@ -158,6 +160,25 @@ export default function AdminApp() {
   );
   const availableCount = cars.filter((c) => c.status === "available").length;
 
+  // Find-a-car-fast: text search over title/stock/VIN + one-tap status chips.
+  // Purely client-side; reordering is disabled while a filter narrows the list
+  // (position arrows only make sense against the full sequence).
+  const filtering = query.trim() !== "" || statusFilter !== "all";
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return ordered.filter((c) => {
+      if (statusFilter === "featured") {
+        if (!c.featured) return false;
+      } else if (statusFilter !== "all" && c.status !== statusFilter) {
+        return false;
+      }
+      if (!q) return true;
+      const hay = [c.year, c.make, c.model, c.trim, c.stockNumber, c.vin]
+        .filter(Boolean).join(" ").toLowerCase();
+      return q.split(/\s+/).every((t) => hay.includes(t));
+    });
+  }, [ordered, query, statusFilter]);
+
   // Persist the manual order, debounced so rapid up/down clicks send one request.
   function persistOrder(ids: string[]) {
     pendingOrder.current = ids;
@@ -178,6 +199,33 @@ export default function AdminApp() {
     const reindexed = arr.map((c, idx) => ({ ...c, sortOrder: idx }));
     setCars(reindexed);
     persistOrder(reindexed.map((c) => c.id));
+  }
+  // Send a car straight to the top of the site (position 1).
+  function moveTop(i: number) {
+    if (i <= 0) return;
+    const arr = [...ordered];
+    const [picked] = arr.splice(i, 1);
+    arr.unshift(picked);
+    const reindexed = arr.map((c, idx) => ({ ...c, sortOrder: idx }));
+    setCars(reindexed);
+    persistOrder(reindexed.map((c) => c.id));
+  }
+
+  // One-tap status change from the list — no need to open the editor to mark a
+  // car sold when a buyer drives off.
+  async function quickStatus(car: Vehicle, status: string) {
+    if (status === car.status) return;
+    setBusy(true);
+    try {
+      await apiSave({ ...(car as unknown as Json), originalId: car.id, status });
+      await load();
+      const label = [car.year, car.make, car.model].filter(Boolean).join(" ");
+      flash("ok", `"${label}" is now ${status === "pending" ? "sale pending" : status}.`);
+    } catch (e) {
+      flash("err", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   function startAdd() {
@@ -354,12 +402,47 @@ export default function AdminApp() {
             </button>
           </div>
 
+          {cars.length > 1 && (
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search year, make, model, stock #, VIN…"
+                aria-label="Search vehicles"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm focus:border-navy-500 sm:max-w-xs"
+              />
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
+                {([["all", "All"], ["available", "Available"], ["pending", "Pending"], ["sold", "Sold"], ["featured", "Featured"]] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setStatusFilter(value)}
+                    aria-pressed={statusFilter === value}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                      statusFilter === value
+                        ? "bg-navy-900 text-white"
+                        : "border border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="mt-4 text-sm text-slate-500">
-            {cars.length} {cars.length === 1 ? "vehicle" : "vehicles"} · {availableCount} available
+            {filtering
+              ? `${visible.length} of ${cars.length} shown`
+              : `${cars.length} ${cars.length === 1 ? "vehicle" : "vehicles"}`}{" "}
+            · {availableCount} available
           </p>
           {cars.length > 1 && (
             <p className="mt-1 text-xs text-slate-500">
-              Use the <span className="font-semibold">▲ ▼</span> arrows to set the order vehicles appear on your website — top of the list shows first.
+              {filtering
+                ? "Reordering is paused while searching or filtering — clear them to move cars."
+                : <>Use the <span className="font-semibold">▲ ▼</span> arrows (or <span className="font-semibold">⤒</span> for straight to top) to set the order vehicles appear on your website — top of the list shows first.</>}
             </p>
           )}
 
@@ -373,7 +456,7 @@ export default function AdminApp() {
                 </p>
               </div>
             )}
-            {ordered.map((c, i) => {
+            {visible.map((c, i) => {
               const title = [c.year, c.make, c.model, c.trim].filter(Boolean).join(" ");
               return (
                 <div
@@ -383,19 +466,29 @@ export default function AdminApp() {
                   <div className="flex shrink-0 flex-col">
                     <button
                       type="button"
+                      aria-label={`Move ${title} to the top`}
+                      title="Move to top"
+                      disabled={filtering || i === 0 || busy}
+                      onClick={() => moveTop(i)}
+                      className="flex h-5 w-7 items-center justify-center rounded text-[13px] text-slate-500 hover:bg-slate-100 disabled:opacity-25"
+                    >
+                      ⤒
+                    </button>
+                    <button
+                      type="button"
                       aria-label={`Move ${title} up`}
-                      disabled={i === 0 || busy}
+                      disabled={filtering || i === 0 || busy}
                       onClick={() => moveCar(i, -1)}
-                      className="flex h-6 w-7 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:opacity-25"
+                      className="flex h-5 w-7 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:opacity-25"
                     >
                       ▲
                     </button>
                     <button
                       type="button"
                       aria-label={`Move ${title} down`}
-                      disabled={i === ordered.length - 1 || busy}
+                      disabled={filtering || i === visible.length - 1 || busy}
                       onClick={() => moveCar(i, 1)}
-                      className="flex h-6 w-7 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:opacity-25"
+                      className="flex h-5 w-7 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:opacity-25"
                     >
                       ▼
                     </button>
@@ -417,15 +510,30 @@ export default function AdminApp() {
                       {c.featured && (
                         <span className="ml-2 rounded bg-brand-50 px-1.5 py-0.5 text-xs font-semibold text-brand-600">Featured</span>
                       )}
-                      {c.status !== "available" && (
-                        <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium capitalize text-slate-600">{c.status}</span>
-                      )}
                     </p>
                     <p className="truncate text-xs text-slate-500">
                       {formatPrice(c.price)} · {formatMileage(c.mileage)} · {c.images.length} photo{c.images.length === 1 ? "" : "s"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <select
+                      value={c.status}
+                      onChange={(e) => quickStatus(c, e.target.value)}
+                      disabled={busy}
+                      aria-label={`Status of ${title}`}
+                      title="Change status — saves instantly"
+                      className={`rounded-lg border px-2 py-1.5 text-sm font-medium disabled:opacity-50 ${
+                        c.status === "available"
+                          ? "border-green-200 bg-green-50 text-green-800"
+                          : c.status === "pending"
+                            ? "border-amber-200 bg-amber-50 text-amber-800"
+                            : "border-slate-300 bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      <option value="available">Available</option>
+                      <option value="pending">Sale Pending</option>
+                      <option value="sold">Sold</option>
+                    </select>
                     <button type="button" onClick={() => startEdit(c)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-navy-900 hover:bg-slate-50">Edit</button>
                     <button type="button" onClick={() => duplicate(c)} disabled={busy} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50">Duplicate</button>
                     <button type="button" onClick={() => removeCar(c)} disabled={busy} aria-label="Delete vehicle" className="rounded-lg border border-red-200 p-1.5 text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash size={16} /></button>
@@ -476,13 +584,30 @@ type EditorProps = {
 };
 
 function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }: EditorProps) {
-  const set = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
+  // Anything typed/uploaded but not yet posted — warns before it can be lost.
+  const dirty = useRef(false);
+  const set = (patch: Partial<FormState>) => {
+    dirty.current = true;
+    setForm((f) => ({ ...f, ...patch }));
+  };
   const [uploading, setUploading] = useState(0);
   // Index of the photo being dragged to a new position (null = no drag).
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   // URLs uploaded during THIS editing session. If the admin removes one before
   // saving, or cancels the form, we reclaim those KV blobs so they don't orphan.
   const sessionUploaded = useRef<Set<string>>(new Set());
+
+  // Closing/refreshing the tab with unsaved work gets a browser confirmation.
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (dirty.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
 
   // If a photo is dropped outside the upload box, the browser's default is to
   // NAVIGATE to the file — wiping the half-filled form. Neutralize that.
@@ -506,6 +631,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
       onUploadError(`Skipped ${skipped} file${skipped === 1 ? "" : "s"} that ${skipped === 1 ? "isn't a photo" : "aren't photos"}.`);
     }
     if (images.length === 0) return;
+    dirty.current = true;
     setUploading((u) => u + images.length);
     const carId = carIdFor(form);
     // Uploads run a few at a time and finish out of order (small photos beat big
@@ -561,6 +687,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
       sessionUploaded.current.delete(url);
       void apiDeletePhoto(url);
     }
+    dirty.current = true;
     setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }));
   }
 
@@ -568,6 +695,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
   // they were never attached to a saved vehicle. (Existing photos on an edited
   // car aren't tracked here, so they're never touched by a cancel.)
   function handleCancel() {
+    if (dirty.current && !confirm("Discard your unsaved changes to this vehicle?")) return;
     if (sessionUploaded.current.size) {
       const urls = [...sessionUploaded.current];
       sessionUploaded.current.clear();
@@ -576,6 +704,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
     onCancel();
   }
   function moveImage(i: number, delta: number) {
+    dirty.current = true;
     setForm((f) => {
       const next = [...f.images];
       const t = i + delta;
@@ -586,6 +715,7 @@ function Editor({ form, setForm, onSave, onCancel, isNew, busy, onUploadError }:
   }
   // Drag-and-drop: pull the photo out and drop it at the target position.
   function moveImageTo(from: number, to: number) {
+    dirty.current = true;
     setForm((f) => {
       if (from === to || from < 0 || to < 0 || from >= f.images.length || to >= f.images.length) return f;
       const next = [...f.images];

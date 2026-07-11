@@ -1,13 +1,13 @@
 import Container from "@/components/Container";
 import Reveal from "@/components/Reveal";
+import { site } from "@/lib/site";
 import { Star } from "@/components/icons";
 
-// Real Google reviews for Sahar Motors (Google Maps — 4.9★ from 16 reviews).
-// Wording and star ratings are the customers' own; longer reviews are trimmed
-// for length without changing their meaning. Update from the Google profile as
-// new reviews come in.
-const GOOGLE_REVIEWS_URL =
-  "https://www.google.com/maps/place/Sahar+Motors/@49.1103502,-122.6676547,17z/data=!3m1!4b1!4m6!3m5!1s0x5485d706111b0d23:0x7b534aeba5357a9e!8m2!3d49.1103502!4d-122.6676547!16s%2Fg%2F11w81prv1v";
+// Real Google reviews for Sahar Motors. Wording and star ratings are the
+// customers' own; longer reviews are trimmed for length without changing their
+// meaning. The aggregate badge reads from site.googleReviews — update there as
+// the profile grows.
+const GOOGLE_REVIEWS_URL = site.googleReviews.url;
 
 const reviews = [
   {
@@ -64,13 +64,13 @@ export default function Testimonials() {
             rel="noopener noreferrer"
             className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm transition hover:shadow"
           >
-            <span className="text-lg font-extrabold text-navy-900">4.9</span>
+            <span className="text-lg font-extrabold text-navy-900">{site.googleReviews.rating}</span>
             <span className="flex gap-0.5 text-amber-400" aria-hidden="true">
               {Array.from({ length: 5 }).map((_, s) => (
                 <Star key={s} size={16} className="fill-current" />
               ))}
             </span>
-            <span className="text-slate-600">based on 16 Google reviews</span>
+            <span className="text-slate-600">based on {site.googleReviews.count} Google reviews</span>
           </a>
         </div>
 

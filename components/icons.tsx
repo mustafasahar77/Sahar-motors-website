@@ -227,6 +227,31 @@ export const Star = (p: IconProps) => (
   </I>
 );
 
+export const Share2 = (p: IconProps) => (
+  <I {...p}>
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <path d="m8.59 13.51 6.83 3.98" />
+    <path d="m15.41 6.51-6.82 3.98" />
+  </I>
+);
+
+export const MessageSquare = (p: IconProps) => (
+  <I {...p}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </I>
+);
+
+export const Expand = (p: IconProps) => (
+  <I {...p}>
+    <path d="M15 3h6v6" />
+    <path d="M9 21H3v-6" />
+    <path d="M21 3l-7 7" />
+    <path d="M3 21l7-7" />
+  </I>
+);
+
 export const Camera = (p: IconProps) => (
   <I {...p}>
     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z" />

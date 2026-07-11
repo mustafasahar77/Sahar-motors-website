@@ -103,17 +103,26 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile toggle */}
-          <button
-            type="button"
-            aria-label="Open menu"
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            onClick={() => setOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10 lg:hidden"
-          >
-            <Menu />
-          </button>
+          {/* Mobile: one-tap call + menu toggle */}
+          <div className="flex items-center gap-1 lg:hidden">
+            <a
+              href={site.phones[0].href}
+              aria-label={`Call ${site.name} at ${site.phones[0].value}`}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10"
+            >
+              <Phone size={19} />
+            </a>
+            <button
+              type="button"
+              aria-label="Open menu"
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              onClick={() => setOpen(true)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10"
+            >
+              <Menu />
+            </button>
+          </div>
         </div>
       </nav>
 
