@@ -22,7 +22,7 @@ const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURICom
 
 // Texting goes to the mobile line when one is listed (texting a landline goes
 // nowhere); "?&body=" prefills the message on both iOS and Android.
-const textPhone = site.phones[1] ?? site.phones[0];
+const textPhone = site.phones.at(1) ?? site.phones[0];
 const smsHref = (message: string) =>
   `sms:${textPhone.href.replace("tel:", "")}?&body=${encodeURIComponent(message)}`;
 
